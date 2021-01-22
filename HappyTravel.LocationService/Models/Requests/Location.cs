@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using HappyTravel.EdoContracts.GeoData.Enums;
-using Nest;
+using HappyTravel.Geography;
 
-namespace HappyTravel.LocationService.Models
+namespace HappyTravel.LocationService.Models.Requests
 {
     public class Location
     {
-        public string Id { get; init; }
-        public string PredictionText { get; init; }
+        public string Id { get; set; }
         public string Name { get; set; }
         public string Locality { get; set; }
         public string Country { get; set; }
-        public GeoCoordinate Coordinates { get; set; }
+        public string CountryCode { get; set; }
+        public GeoPoint Coordinates { get; set; }
         public double DistanceInMeters { get; set; }
         public PredictionSources Source { get; set; }
         public LocationTypes Type { get; set; }

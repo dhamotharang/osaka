@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using HappyTravel.LocationService.Infrastructure;
 using HappyTravel.LocationService.Infrastructure.Extensions;
 using HappyTravel.LocationService.Services;
@@ -12,8 +15,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using HappyTravel.ErrorHandling.Extensions;
+using HappyTravel.LocationService.Filters;
+using HappyTravel.LocationService.Options;
 using HappyTravel.StdOutLogger.Extensions;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 namespace HappyTravel.LocationService
@@ -32,19 +40,31 @@ namespace HappyTravel.LocationService
             using var vaultClient = VaultHelper.CreateVaultClient(_configuration);
             var token = _configuration[_configuration["Vault:Token"]];
             vaultClient.Login(token).GetAwaiter().GetResult();
-            
-            services.AddTransient<IPredictionsService, PredictionsService>();
+            var locationIndexes = vaultClient.Get(_configuration["Elasticsearch:Indexes"]).GetAwaiter().GetResult();
 
-            services.AddResponseCompression()
+            services.AddElasticsearchClient(_configuration, vaultClient, locationIndexes)
+                .AddResponseCompression()
                 .AddCors()
                 .AddLocalization()
-                .AddTracing(_hostEnvironment, _configuration);
+                .AddTracing(_hostEnvironment, _configuration)
+                .AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.WriteIndented = false;
+                    options.JsonSerializerOptions.IgnoreNullValues = true;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals |
+                                                                   JsonNumberHandling.AllowReadingFromString;
+                    options.JsonSerializerOptions.Converters.Add(
+                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
+                    options.JsonSerializerOptions.Converters.Add(new NetTopologySuite.IO.Converters.GeoJsonConverterFactory());
+                });
             
             services.ConfigureAuthentication(_configuration, _hostEnvironment, vaultClient);
             services.AddHealthChecks()
                 .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
             
-            services.AddProblemDetailsErrorHandling();
+            services.AddProblemDetailsErrorHandling(); 
             
             services.AddApiVersioning(options =>
             {
@@ -52,8 +72,6 @@ namespace HappyTravel.LocationService
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
             });
-            
-            services.AddElasticsearchClient(_configuration, vaultClient);
             
             services.AddSwaggerGen(options =>
             {
@@ -70,7 +88,7 @@ namespace HappyTravel.LocationService
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey
                 });
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -89,7 +107,12 @@ namespace HappyTravel.LocationService
                 });
             });
 
-            services.AddMvcCore()
+            services.AddMvcCore(options =>
+                {
+                    //options.Conventions.Add(new AuthorizeControllerModelConvention());
+                    options.Filters.Add(new MiddlewareFilterAttribute(typeof(LocalizationPipelineFilter)));
+                    options.Filters.Add(typeof(ModelValidationFilter));
+                })
                 .AddAuthorization()
                 .AddControllersAsServices()
                 .AddMvcOptions(m => m.EnableEndpointRouting = true)
@@ -97,14 +120,30 @@ namespace HappyTravel.LocationService
                 .AddApiExplorer()
                 .AddCacheTagHelper()
                 .AddDataAnnotations();
+            
+            services.AddTransient<ILocationSearchService, LocationSearchService>();
+            services.AddTransient<ILocationManagementService, LocationManagementService>();
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.DefaultRequestCulture = new RequestCulture("en");
+                options.SupportedCultures = new[]
+                {
+                    new CultureInfo("en"),
+                    new CultureInfo("ar"),
+                    new CultureInfo("ru")
+                };
+
+                options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider { Options = options });
+            });
+            services.Configure<IndexOptions>(o => o.Indexes = locationIndexes);
         }
 
         
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<RequestLocalizationOptions> localizationOptions)
         {
             var logger = loggerFactory.CreateLogger<Startup>();
             app.UseProblemDetailsExceptionHandler(env, logger);
-
+            app.UseRequestLocalization(localizationOptions.Value);
             app.UseHttpContextLogging(
                 options => options.IgnoredPaths = new HashSet<string> {"/health"}
             );
@@ -116,8 +155,8 @@ namespace HappyTravel.LocationService
                     options.RoutePrefix = string.Empty;
                 });
 
-            app.UseResponseCompression()
-                .UseCors(builder => builder
+            app.UseResponseCompression();
+            app.UseCors(builder => builder
                     .AllowAnyOrigin()
                     .AllowAnyHeader()
                     .AllowAnyMethod());
@@ -132,6 +171,7 @@ namespace HappyTravel.LocationService
                 });
         }
 
+       
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _hostEnvironment;
     }

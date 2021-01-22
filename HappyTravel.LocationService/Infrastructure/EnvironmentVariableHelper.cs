@@ -17,7 +17,15 @@ namespace HappyTravel.LocationService.Infrastructure
 
 
         public static bool IsLocal(this IHostEnvironment hostingEnvironment) 
-            => hostingEnvironment.IsEnvironment(LocalEnvironment);    
+            => hostingEnvironment.IsEnvironment(LocalEnvironment);
+
+
+        public static bool IsLocal()
+        {
+            var environmentVariable = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            
+            return !string.IsNullOrEmpty(environmentVariable) && environmentVariable.ToUpperInvariant().Equals("LOCAL");
+        }
         
 
         private const string LocalEnvironment = "Local";
