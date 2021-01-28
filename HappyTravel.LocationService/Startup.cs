@@ -17,6 +17,8 @@ using Microsoft.Extensions.Hosting;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.LocationService.Filters;
 using HappyTravel.LocationService.Options;
+using HappyTravel.LocationService.Services.Locations;
+using HappyTravel.LocationService.Services.Locations.Mapper;
 using HappyTravel.StdOutLogger.Extensions;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
@@ -43,6 +45,7 @@ namespace HappyTravel.LocationService
             var locationIndexes = vaultClient.Get(_configuration["Elasticsearch:Indexes"]).GetAwaiter().GetResult();
 
             services.AddElasticsearchClient(_configuration, vaultClient, locationIndexes)
+                .AddHttpClients(_configuration, vaultClient)
                 .AddResponseCompression()
                 .AddCors()
                 .AddLocalization()
@@ -121,8 +124,10 @@ namespace HappyTravel.LocationService
                 .AddCacheTagHelper()
                 .AddDataAnnotations();
             
-            services.AddTransient<ILocationSearchService, LocationSearchService>();
-            services.AddTransient<ILocationManagementService, LocationManagementService>();
+            services.AddTransient<IPredictionsService, PredictionsService>();
+            services.AddTransient<ILocationsService, MapperLocationsService>();
+            services.AddTransient<IMapperLocationsManagementService, MapperLocationsManagementService>();
+            
             services.Configure<RequestLocalizationOptions>(options =>
             {
                 options.DefaultRequestCulture = new RequestCulture("en");

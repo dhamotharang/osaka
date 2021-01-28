@@ -15,7 +15,7 @@ namespace HappyTravel.LocationService.Infrastructure.Extensions
         {
             var clientSettings = vaultClient.Get(configuration["Elasticsearch:ClientSettings"]).GetAwaiter().GetResult();
             
-            return services.AddSingleton<IElasticClient>(p =>
+            return services.AddSingleton<IElasticClient>(_ =>
             {
                 ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
                 ConnectionSettings connectionSettings;
@@ -57,21 +57,26 @@ namespace HappyTravel.LocationService.Infrastructure.Extensions
                         .Settings(settings => settings.Analysis(analysis =>
                             analysis
                                 .TokenFilters(filter => filter.EdgeNGram("predictions_filter",
-                                    tokenFilter => tokenFilter.MinGram(1).MaxGram(20)))
+                                    tokenFilter => tokenFilter.MinGram(2).MaxGram(15)))
                                 .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
                                     predictionsAnalyzer =>
                                         predictionsAnalyzer.Filters("lowercase", "asciifolding", "predictions_filter")
                                             .Tokenizer("standard")))))
                         .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
                                 properties.Keyword(property => property.Name(prediction => prediction.Id))
-                                    .Keyword(property => property.Name(prediction => prediction.Name))
-                                    .Keyword(property => property.Name(prediction => prediction.Locality))
-                                    .Keyword(property => property.Name(prediction => prediction.Country))
-                                    .Text(property => property.Name(prediction => prediction.PredictionText))
+                                    .Text(property => property.Name(prediction => prediction.Name)
+                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
+                                    .Text(property => property.Name(prediction => prediction.Locality)
+                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
+                                    .Text(property => property.Name(prediction => prediction.Country)
+                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
+                                    .Text(property => property.Name(prediction => prediction.PredictionText)
+                                            .Analyzer("predictions_analyzer")
+                                            .SearchAnalyzer("predictions_analyzer"))
+                                    .Keyword(property => property.Name(prediction => prediction.CountryCode))
                                     .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
-                                    .Number(property =>
-                                        property.Name(prediction => prediction.DistanceInMeters)
-                                            .Type(NumberType.Double)))
+                                    .Number(property => property.Name(prediction => prediction.DistanceInMeters)
+                                        .Type(NumberType.Double)))
                             .AutoMap()));
             }
         }
