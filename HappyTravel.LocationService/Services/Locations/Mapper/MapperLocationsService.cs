@@ -77,7 +77,6 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
         }
 
         
-        private static readonly List<Location> EmptyLocations = new(0);
         private readonly IndexOptions _indexOptions;
         private readonly IElasticClient _elasticClient;
         private readonly ILogger<ILocationsService> _logger;

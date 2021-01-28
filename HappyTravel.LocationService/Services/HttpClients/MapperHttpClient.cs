@@ -21,7 +21,7 @@ namespace HappyTravel.LocationService.Services.HttpClients
 
 
         public Task<Result<List<Location>>> GetLocations(AccommodationMapperLocationTypes locationType, string languageCode, DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default)
-            => Execute<List<Location>>(new HttpRequestMessage(HttpMethod.Get, $"api/1.0/location-mappings/locations/?locationType={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
+            => Execute<List<Location>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/location-mappings/locations/?locationType={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
 
 
         private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = null, CancellationToken cancellationToken = default)

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using HappyTravel.ErrorHandling.Extensions;
+using HappyTravel.LocationService.Conventions;
 using HappyTravel.LocationService.Filters;
 using HappyTravel.LocationService.Options;
 using HappyTravel.LocationService.Services.Locations;
@@ -112,7 +113,7 @@ namespace HappyTravel.LocationService
 
             services.AddMvcCore(options =>
                 {
-                    //options.Conventions.Add(new AuthorizeControllerModelConvention());
+                    options.Conventions.Add(new AuthorizeControllerModelConvention());
                     options.Filters.Add(new MiddlewareFilterAttribute(typeof(LocalizationPipelineFilter)));
                     options.Filters.Add(typeof(ModelValidationFilter));
                 })
