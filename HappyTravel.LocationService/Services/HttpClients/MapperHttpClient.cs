@@ -24,14 +24,14 @@ namespace HappyTravel.LocationService.Services.HttpClients
             => Execute<List<Location>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/location-mappings/locations/?locationType={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
 
 
-        private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = null, CancellationToken cancellationToken = default)
+        private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = "", CancellationToken cancellationToken = default)
         {
-            _httpClient.DefaultRequestHeaders.Add("Accept-Language", languageCode ?? string.Empty);
+            _httpClient.DefaultRequestHeaders.Add("Accept-Language", languageCode);
             var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
             var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
             if (responseMessage.IsSuccessStatusCode)
-                return await JsonSerializer.DeserializeAsync<TResponse>(stream, _jsonSerializerOptions, cancellationToken);
+                return await JsonSerializer.DeserializeAsync<TResponse>(stream, _jsonSerializerOptions, cancellationToken) ?? throw new InvalidOperationException();
 
             var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, _jsonSerializerOptions, cancellationToken);
 

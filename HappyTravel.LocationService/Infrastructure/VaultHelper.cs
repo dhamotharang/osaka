@@ -8,7 +8,7 @@ namespace HappyTravel.LocationService.Infrastructure
 {
     public static class VaultHelper
     {
-        public static VaultClient.VaultClient CreateVaultClient(IConfiguration configuration, ILoggerFactory loggerFactory = null)
+        public static VaultClient.VaultClient CreateVaultClient(IConfiguration configuration, ILoggerFactory loggerFactory = null!)
         {
             var vaultOptions = new VaultOptions
             {

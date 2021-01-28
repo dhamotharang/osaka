@@ -27,7 +27,7 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
 
         public async Task<Result<List<Location>>> Search(string query, int skip = 0, int top = 10, CancellationToken cancellationToken = default)
         {
-            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes, Languages.English, out var index);
+            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, Languages.English, out var index);
            
             var multiSearchResponse = await _elasticClient.MultiSearchAsync(index,
                 request => request
@@ -67,7 +67,7 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
         
         public async Task<Result<Location>> Get(string htId, CancellationToken cancellationToken = default)
         {
-            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes, Languages.English, out var index);
+            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, Languages.English, out var index);
             
             var searchResponse = await _elasticClient.GetAsync<Location>(htId, request => request.Index(index), cancellationToken);
             

@@ -6,6 +6,6 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
 {
     public interface IMapperLocationsManagementService
     {
-        Task<Result<int>> ReUploadLocations(CancellationToken cancellationToken = default);
+        Task<Result<int>> ReUpload(CancellationToken cancellationToken = default);
     }
 }

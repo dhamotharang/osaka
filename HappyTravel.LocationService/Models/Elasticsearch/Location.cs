@@ -6,17 +6,16 @@ namespace HappyTravel.LocationService.Models.Elasticsearch
 {
     public class Location
     {
-        public string Id { get; init; }
-        public string HtId { get; init; }
-        public string PredictionText { get; init; }
-        public string Name { get; init; }
-        public string Locality { get; init; }
-        public string Country { get; init; }
-        public string CountryCode { get; init; }
-        public GeoCoordinate Coordinates { get; init; }
+        public string Id { get; init; } = string.Empty;
+        public string HtId { get; init; } = string.Empty;
+        public string PredictionText { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
+        public string Locality { get; init; } = string.Empty;
+        public string Country { get; init; } = string.Empty;
+        public string CountryCode { get; init; } = string.Empty;
+        public GeoCoordinate Coordinates { get; init; } = new (0,0);
         public double DistanceInMeters { get; init; }
-        public LocationTypes Type { get; init; }
-        public AccommodationMapperLocationTypes LocationType {get; init; }
-        public DateTime Modified { get; init; }
-    }
+        public LocationTypes Type { get; init; } = LocationTypes.Unknown;
+        public AccommodationMapperLocationTypes LocationType { get; init; } = 0;
+        public DateTime Modified { get; init; }    }
 }

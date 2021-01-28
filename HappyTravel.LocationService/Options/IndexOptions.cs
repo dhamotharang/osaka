@@ -4,6 +4,6 @@ namespace HappyTravel.LocationService.Options
 {
     public class IndexOptions
     {
-        public Dictionary<string, string> Indexes { get; set; }
+        public Dictionary<string, string> Indexes { get; set; } = null!;
     }
 }

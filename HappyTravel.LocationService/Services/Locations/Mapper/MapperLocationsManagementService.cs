@@ -28,13 +28,13 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
         }
 
         
-        public async Task<Result<int>> ReUploadLocations(CancellationToken cancellationToken = default)
+        public async Task<Result<int>> ReUpload(CancellationToken cancellationToken = default)
         {
             var languageCode = LanguagesHelper.GetLanguageCode(Languages.English).ToLowerInvariant();
-            if (!ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes, languageCode, out var index))
+            if (!ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, languageCode, out var index))
                 return Result.Failure<int>($"Index with the language '{languageCode}' doesn't exist");
 
-            var (_, removeFailure, removeError) = await RemoveAllFromIndex(index, cancellationToken);
+            var (_, removeFailure, removeError) = await RemoveAllFromIndex(index!, cancellationToken);
             if (removeFailure)
                 return Result.Failure<int>(removeError);
             

@@ -35,7 +35,7 @@ namespace HappyTravel.LocationService.Infrastructure.Extensions
             var apiName = configuration["Authority:ApiName"];
             var authorityUrl = configuration["Authority:Endpoint"];
             if (environment.IsDevelopment() || environment.IsLocal())
-                return (apiName,  authorityUrl);
+                return (apiName, authorityUrl);
 
             apiName = authorityOptions["apiName"];
             authorityUrl = authorityOptions["authorityUrl"];

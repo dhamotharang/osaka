@@ -65,8 +65,7 @@ namespace HappyTravel.LocationService
                 });
             
             services.ConfigureAuthentication(_configuration, _hostEnvironment, vaultClient);
-            services.AddHealthChecks()
-                .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
+            services.AddHealthChecks();
             
             services.AddProblemDetailsErrorHandling(); 
             

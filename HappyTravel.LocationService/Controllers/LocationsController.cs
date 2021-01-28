@@ -35,7 +35,7 @@ namespace HappyTravel.LocationService.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SearchLocations([FromQuery] string query, [FromQuery] int skip = 0, [FromQuery] int top = 10, CancellationToken cancellationToken = default)
         {
-            var (_, isFailure, locations, error) = await _locationsService.Search(query, skip, top, cancellationToken);
+            var (_, isFailure, locations, error) = await _locationsService!.Search(query, skip, top, cancellationToken);
             
             return isFailure 
                 ? BadRequestWithProblemDetails(error) 
@@ -54,13 +54,13 @@ namespace HappyTravel.LocationService.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetLocation([FromRoute] string htId, CancellationToken cancellationToken = default)
         {
-            var (_, isFailure, value, error) = await _locationsService.Get(htId, cancellationToken);
+            var (_, isFailure, value, error) = await _locationsService!.Get(htId, cancellationToken);
             
             return isFailure
                 ? BadRequestWithProblemDetails(error)
                 : Ok(value);
         }
 
-        private readonly ILocationsService _locationsService;
+        private readonly ILocationsService _locationsService = null!;
     }
 }

@@ -20,8 +20,8 @@ namespace HappyTravel.LocationService.Infrastructure.Extensions
             }
             else
             {
-                agentHost = EnvironmentVariableHelper.Get("Jaeger:AgentHost", configuration);
-                agentPort = int.Parse(EnvironmentVariableHelper.Get("Jaeger:AgentPort", configuration));
+                agentHost = EnvironmentVariableHelper.Get("Jaeger:AgentHost", configuration)!;
+                agentPort = int.Parse(EnvironmentVariableHelper.Get("Jaeger:AgentPort", configuration) ?? string.Empty);
             }
 
             var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";

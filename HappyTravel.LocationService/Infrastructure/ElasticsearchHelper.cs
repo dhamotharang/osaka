@@ -9,7 +9,7 @@ namespace HappyTravel.LocationService.Infrastructure
         {
             index = string.Empty;
             
-            return indexes.TryGetValue(LanguagesHelper.GetLanguageCode(language).ToLowerInvariant(), out index);
+            return indexes.TryGetValue(LanguagesHelper.GetLanguageCode(language).ToLowerInvariant(), out index!);
         }
 
         

@@ -20,16 +20,16 @@ namespace HappyTravel.LocationService.Controllers
 
         
         /// <summary>
-        /// Uploads locations from the mapper
+        /// Re-uploads locations from the mapper
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>Number of locations</returns>
         [HttpPost("re-upload")]
         [ProducesResponseType(typeof(int), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> ReUploadLocations(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ReUpload(CancellationToken cancellationToken = default)
         {
-            var (_, isFailure, uploaded, error) = await _locationsManagementService.ReUploadLocations(cancellationToken);
+            var (_, isFailure, uploaded, error) = await _locationsManagementService.ReUpload(cancellationToken);
 
             return !isFailure
                 ? Ok($"Locations uploaded '{uploaded}'")

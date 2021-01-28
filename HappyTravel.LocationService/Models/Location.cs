@@ -5,15 +5,14 @@ namespace HappyTravel.LocationService.Models
 {
     public class Location
     {
-        public string Id { get; init; }
-        public string HtId { get; init; }
-        public string Name { get; init; }
-        public string Locality { get; init; }
-        public string Country { get; init; }
-        public string CountryCode { get; init; }
-        public GeoPoint Coordinates { get; init; }
+        public string HtId { get; init; } = string.Empty;
+        public string Name { get; init; }  = string.Empty;
+        public string Locality { get; init; } = string.Empty;
+        public string Country { get; init; } = string.Empty;
+        public string CountryCode { get; init; } = string.Empty;
+        public GeoPoint Coordinates { get; init; } = new(0, 0);
         public double DistanceInMeters { get; init; }
-        public AccommodationMapperLocationTypes LocationType { get; init; }
-        public LocationTypes Type { get; init; }
+        public AccommodationMapperLocationTypes LocationType { get; init; } = 0;
+        public LocationTypes Type { get; init; } = LocationTypes.Unknown;
     }
 }
