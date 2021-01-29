@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,10 +18,12 @@ using Microsoft.Extensions.Hosting;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.LocationService.Conventions;
 using HappyTravel.LocationService.Filters;
+using HappyTravel.LocationService.Filters.Authorization;
 using HappyTravel.LocationService.Options;
 using HappyTravel.LocationService.Services.Locations;
 using HappyTravel.LocationService.Services.Locations.Mapper;
 using HappyTravel.StdOutLogger.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.Extensions.Logging;
@@ -116,7 +119,11 @@ namespace HappyTravel.LocationService
                     options.Filters.Add(new MiddlewareFilterAttribute(typeof(LocalizationPipelineFilter)));
                     options.Filters.Add(typeof(ModelValidationFilter));
                 })
-                .AddAuthorization()
+                .AddAuthorization(options =>
+                {
+                    options.AddPolicy(Policies.OnlyManagerClient , 
+                        policy => policy.Requirements.Add(new OnlyManagerClientRequirement()));
+                })
                 .AddControllersAsServices()
                 .AddMvcOptions(m => m.EnableEndpointRouting = true)
                 .AddFormatterMappings()

@@ -55,12 +55,12 @@ namespace HappyTravel.LocationService.Controllers
         public async Task<IActionResult> GetLocation([FromRoute] string htId, CancellationToken cancellationToken = default)
         {
             var (_, isFailure, value, error) = await _locationsService!.Get(htId, cancellationToken);
-            
+             
             return isFailure
                 ? BadRequestWithProblemDetails(error)
                 : Ok(value);
         }
 
-        private readonly ILocationsService _locationsService = null!;
+        private readonly ILocationsService _locationsService;
     }
 }

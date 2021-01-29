@@ -2,7 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.LocationService.Filters.Authorization;
 using HappyTravel.LocationService.Services.Locations.Mapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.LocationService.Controllers
@@ -11,6 +13,7 @@ namespace HappyTravel.LocationService.Controllers
     [ApiVersion("1.0")]
     [Route("api/{v:apiVersion}/locations")]
     [Produces("application/json")]
+    [Authorize(Policy = Policies.OnlyManagerClient)]
     public class LocationsManagementController : BaseController
     {
         public LocationsManagementController(IMapperLocationsManagementService locationsManagementService)

@@ -12,6 +12,7 @@
       <PackageReference Include="HappyTravel.MultiLanguage" Version="1.0.2" />
       <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.18" />
       <PackageReference Include="HappyTravel.VaultClient" Version="1.1.0" />
+      <PackageReference Include="IdentityModel.AspNetCore" Version="3.0.0" />
       <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.2.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
