@@ -13,7 +13,7 @@ namespace HappyTravel.PredictionService.Controllers
     [ApiVersion("1.0")]
     [Route("api/{v:apiVersion}/locations")]
     [Produces("application/json")]
-    //[Authorize(Policy = Policies.OnlyManagerClient)]
+    [Authorize(Policy = Policies.OnlyManagerClient)]
     public class LocationsManagementController : BaseController
     {
         public LocationsManagementController(ILocationsManagementService locationsManagementService)
