@@ -13,10 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace HappyTravel.LocationService.Services.HttpClients
 {
-    public class AccommodationMapperHttpClient : IAccommodationMapperHttpClient
+    public class StaticDataMapperHttpClient : IStaticDataMapperHttpClient
     {
-        public AccommodationMapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions,
-            ILogger<AccommodationMapperHttpClient> logger)
+        public StaticDataMapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions,
+            ILogger<StaticDataMapperHttpClient> logger)
         {
             _httpClientFactory = httpClientFactory;
             _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
@@ -54,6 +54,6 @@ namespace HappyTravel.LocationService.Services.HttpClients
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly ILogger<AccommodationMapperHttpClient> _logger;
+        private readonly ILogger<StaticDataMapperHttpClient> _logger;
     }
 }

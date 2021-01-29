@@ -19,12 +19,12 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
 {
     public class MapperLocationsManagementService : IMapperLocationsManagementService
     {
-        public MapperLocationsManagementService(IElasticClient elasticClient, IAccommodationMapperHttpClient accommodationMapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<IMapperLocationsManagementService> logger)
+        public MapperLocationsManagementService(IElasticClient elasticClient, IStaticDataMapperHttpClient staticDataMapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<IMapperLocationsManagementService> logger)
         {
             _elasticClient = elasticClient;
             _logger = logger;
             _indexOptions = indexOptions.Value;
-            _accommodationMapperHttpClient = accommodationMapperHttpClient;
+            _staticDataMapperHttpClient = staticDataMapperHttpClient;
         }
 
         
@@ -69,7 +69,7 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
                 cancellationToken.ThrowIfCancellationRequested();
                 bool isFailure;
                 string error;
-                (_, isFailure, locations, error) = await _accommodationMapperHttpClient.GetLocations(locationType, languageCode, default, skip, batchSize, cancellationToken);
+                (_, isFailure, locations, error) = await _staticDataMapperHttpClient.GetLocations(locationType, languageCode, default, skip, batchSize, cancellationToken);
                 if (isFailure)
                     yield return Result.Failure<List<Location>>(error);
                 
@@ -144,7 +144,7 @@ namespace HappyTravel.LocationService.Services.Locations.Mapper
         }
         
 
-        private readonly IAccommodationMapperHttpClient _accommodationMapperHttpClient;
+        private readonly IStaticDataMapperHttpClient _staticDataMapperHttpClient;
         private readonly IElasticClient _elasticClient;
         private readonly IndexOptions _indexOptions;
         private readonly ILogger<IMapperLocationsManagementService> _logger;

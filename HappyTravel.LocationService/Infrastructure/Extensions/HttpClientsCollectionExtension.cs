@@ -31,7 +31,7 @@ namespace HappyTravel.LocationService.Infrastructure.Extensions
             });
             
             services.AddHttpClient(HttpClientNames.MapperApi);
-            services.AddTransient<IAccommodationMapperHttpClient, AccommodationMapperHttpClient>();
+            services.AddTransient<IStaticDataMapperHttpClient, StaticDataMapperHttpClient>();
             
             return services;
         }
