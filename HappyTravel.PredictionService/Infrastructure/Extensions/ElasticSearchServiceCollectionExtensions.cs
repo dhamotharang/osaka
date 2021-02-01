@@ -32,7 +32,8 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
                 {
                     connectionSettings =
                         new ConnectionSettings(new Uri(configuration["Elasticsearch:ClientSettings:Endpoint"]))
-                            .DefaultIndex(configuration["Elasticsearch:Indexes:En"]);
+                            .DefaultIndex(configuration["Elasticsearch:Indexes:En"])
+                            .EnableDebugMode();
                 }
 
                 var client = new ElasticClient(connectionSettings);
