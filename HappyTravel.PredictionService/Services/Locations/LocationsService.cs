@@ -28,46 +28,32 @@ namespace HappyTravel.PredictionService.Services.Locations
         public async Task<Result<List<Location>>> Search(string query, int skip = 0, int top = 10, CancellationToken cancellationToken = default)
         {
             ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, Languages.English, out var index);
-           
-            var multiSearchResponse = await _elasticClient.MultiSearchAsync(index,
-                request => request
-                    .Search<Location>(AccommodationMapperLocationTypes.Country.ToString(), CreateSearchCountryRequest)
-                    .Search<Location>(AccommodationMapperLocationTypes.Locality.ToString(), CreateSearchLocalityRequest)
-                    .Search<Location>(AccommodationMapperLocationTypes.Accommodation.ToString(), CreateSearchRequest), cancellationToken);
 
-            if (!multiSearchResponse.IsValid || multiSearchResponse.ServerError != null)
-                return Result.Failure<List<Location>>(multiSearchResponse.ToString());
-            
-            return ProcessResponse();
-            
-            
-            ISearchRequest CreateSearchCountryRequest(SearchDescriptor<Location> search) 
-                => search.Query(searchQuery => searchQuery.Bool(boolQuery 
-                    => boolQuery.Must(mustQuery => mustQuery.Match(matchQuery => matchQuery.Field(location => location.Country).Query(query).Operator(Operator.And)), 
-                        mustQuery => mustQuery.Term(termQuery => termQuery.Field(location => location.LocationType).Value(AccommodationMapperLocationTypes.Country))))).From(0).Size(MaxLocationsNumber);
-            
-            
-            ISearchRequest CreateSearchLocalityRequest(SearchDescriptor<Location> search) 
-                => search.Query(searchQuery => searchQuery.Bool(boolQuery 
-                    => boolQuery.Must(mustQuery => mustQuery.Match(matchQuery => matchQuery.Field(location => location.PredictionText).Query(query).Operator(Operator.And)), 
-                        mustQuery => mustQuery.Term(termQuery => termQuery.Field(location => location.LocationType).Value(AccommodationMapperLocationTypes.Locality))))).From(0).Size(MaxLocationsNumber);
-            
-            
-            ISearchRequest CreateSearchRequest(SearchDescriptor<Location> search) 
-                => search.Query(searchQuery => searchQuery.Bool(boolQuery 
-                    => boolQuery.Must(mustQuery => mustQuery.Match(matchQuery => matchQuery.Field(location => location.PredictionText).Query(query).Operator(Operator.And))))).From(0).Size(MaxLocationsNumber);
+            var response = await _elasticClient.SearchAsync<Location>(
+                search => search.Index(index)
+                    .Query(searchQuery => searchQuery.Bool(boolQuery =>
+                        boolQuery
+                            .Must(mustQuery => mustQuery.Match(matchQuery =>
+                                matchQuery.Field(location => location.PredictionText)
+                                    .Query(query)
+                                    .Operator(Operator.And)))
+                            .Should(shouldQuery => shouldQuery.Term(termQuery =>
+                                    termQuery.Field(location => location.LocationType)
+                                        .Value(MapperLocationTypes.Country)),
+                                shouldQuery => shouldQuery.Term(termQuery =>
+                                    termQuery.Field(location => location.LocationType)
+                                        .Value(MapperLocationTypes.Locality)))))
+                    .From(0)
+                    .Size(MaxLocationsNumber),
+                cancellationToken);
 
-            
-            List<Location> ProcessResponse() =>
-                multiSearchResponse.GetResponses<Location>()
-                    .SelectMany(searchResponse => searchResponse.Documents).Skip(skip).Take(top)
-                    .GroupBy(location => location.Id).Select(group => group.First()).ToList();
+            return response.Documents.ToList();
         }
-
+        
         
         public async Task<Result<Location>> Get(string htId, CancellationToken cancellationToken = default)
         {
-            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, Languages.English, out var index);
+            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes, Languages.English, out var index);
             
             var searchResponse = await _elasticClient.GetAsync<Location>(htId, request => request.Index(index), cancellationToken);
             
@@ -75,7 +61,7 @@ namespace HappyTravel.PredictionService.Services.Locations
                 ? Result.Failure<Location>($"Failed to retrieve a location by htId '{htId}'") 
                 : searchResponse.Source;
         }
-
+        
         
         private readonly IndexOptions _indexOptions;
         private readonly IElasticClient _elasticClient;

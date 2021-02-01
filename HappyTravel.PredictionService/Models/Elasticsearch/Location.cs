@@ -16,6 +16,6 @@ namespace HappyTravel.PredictionService.Models.Elasticsearch
         public GeoCoordinate Coordinates { get; init; } = new (0,0);
         public double DistanceInMeters { get; init; }
         public LocationTypes Type { get; init; } = LocationTypes.Unknown;
-        public AccommodationMapperLocationTypes LocationType { get; init; } = 0;
+        public MapperLocationTypes LocationType { get; init; } = 0;
         public DateTime Modified { get; init; }    }
 }

@@ -9,7 +9,7 @@ namespace HappyTravel.PredictionService.Services.HttpClients
 {
     public interface IStaticDataMapperHttpClient
     {
-        Task<Result<List<Location>>> GetLocations(AccommodationMapperLocationTypes locationType, string languageCode,
+        Task<Result<List<Location>>> GetLocations(MapperLocationTypes locationType, string languageCode,
             DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default);
     }
 }

@@ -40,7 +40,7 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             var locationsUploaded = 0;
             
-            foreach (var locationType in Enum.GetValues<AccommodationMapperLocationTypes>())
+            foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
             {
                 const int batchSize = 50000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
@@ -60,7 +60,7 @@ namespace HappyTravel.PredictionService.Services.Locations
         }
 
         
-        private async IAsyncEnumerable<Result<List<Location>>> GetFromMapper(AccommodationMapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        private async IAsyncEnumerable<Result<List<Location>>> GetFromMapper(MapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var skip = 0;
             List<Location> locations;
@@ -130,7 +130,7 @@ namespace HappyTravel.PredictionService.Services.Locations
         
         private static string BuildPredictionText(Location location)
         {
-            var result = location.LocationType == AccommodationMapperLocationTypes.Accommodation
+            var result = location.LocationType == MapperLocationTypes.Accommodation
                 ? location.Name
                 : string.Empty;
             

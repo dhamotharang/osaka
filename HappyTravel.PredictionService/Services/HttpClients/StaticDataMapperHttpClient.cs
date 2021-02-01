@@ -24,7 +24,7 @@ namespace HappyTravel.PredictionService.Services.HttpClients
         }
 
 
-        public Task<Result<List<Location>>> GetLocations(AccommodationMapperLocationTypes locationType, string languageCode, DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default)
+        public Task<Result<List<Location>>> GetLocations(MapperLocationTypes locationType, string languageCode, DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default)
             => Execute<List<Location>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/location-mappings/locations/?locationType={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
 
 

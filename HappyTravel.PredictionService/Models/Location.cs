@@ -12,7 +12,7 @@ namespace HappyTravel.PredictionService.Models
         public string CountryCode { get; init; } = string.Empty;
         public GeoPoint Coordinates { get; init; } = new(0, 0);
         public double DistanceInMeters { get; init; }
-        public AccommodationMapperLocationTypes LocationType { get; init; } = 0;
+        public MapperLocationTypes LocationType { get; init; } = 0;
         public LocationTypes Type { get; init; } = LocationTypes.Unknown;
     }
 }

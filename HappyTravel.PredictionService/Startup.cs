@@ -44,7 +44,6 @@ namespace HappyTravel.PredictionService
             var token = _configuration[_configuration["Vault:Token"]];
             vaultClient.Login(token).GetAwaiter().GetResult();
             var locationIndexes = vaultClient.Get(_configuration["Elasticsearch:Indexes"]).GetAwaiter().GetResult();
-
             services.AddElasticsearchClient(_configuration, vaultClient, locationIndexes)
                 .AddHttpClients(_configuration, vaultClient)
                 .AddResponseCompression()

@@ -1,6 +1,6 @@
 ﻿namespace HappyTravel.PredictionService.Models
 {
-    public enum AccommodationMapperLocationTypes
+    public enum MapperLocationTypes
     {
         Country = 1,
         Locality = 2,
