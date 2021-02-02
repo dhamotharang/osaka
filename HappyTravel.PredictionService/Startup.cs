@@ -144,6 +144,9 @@ namespace HappyTravel.PredictionService
                 options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider { Options = options });
             });
             services.Configure<IndexOptions>(o => o.Indexes = locationIndexes);
+
+            services.AddHealthChecks()
+                .AddCheck<ElasticSearchHealthCheck>("ElasticSearch");
         }
 
         

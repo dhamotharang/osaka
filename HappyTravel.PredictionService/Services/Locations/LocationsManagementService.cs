@@ -86,7 +86,7 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
 
-            if (!response.IsValid || response.ServerError != null) 
+            if (!response.IsValid) 
                 return Result.Failure(response.ToString());
             
             return Result.Success();
@@ -97,7 +97,10 @@ namespace HappyTravel.PredictionService.Services.Locations
         {
             var response = await _elasticClient.DeleteByQueryAsync<Models.Elasticsearch.Location>(request => request.Index(index).MatchAll(), cancellationToken);
             
-            return !response.IsValid || response.ServerError != null 
+            if (response.OriginalException is not null)
+                throw response.OriginalException;
+            
+            return !response.IsValid
                 ? Result.Failure(response.ToString()) 
                 : Result.Success();
         }
