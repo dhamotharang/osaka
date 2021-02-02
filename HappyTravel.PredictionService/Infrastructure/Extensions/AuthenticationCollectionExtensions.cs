@@ -34,7 +34,7 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
 
             var apiName = configuration["Authority:ApiName"];
             var authorityUrl = configuration["Authority:Endpoint"];
-            if (environment.IsDevelopment() || environment.IsLocal())
+            if (environment.IsLocal())
                 return (apiName, authorityUrl);
 
             apiName = authorityOptions["apiName"];
