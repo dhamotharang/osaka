@@ -14,7 +14,7 @@ WORKDIR /src
 COPY *.sln ./
 COPY . .
 RUN dotnet restore
-WORKDIR /src/HappyTravel.HappyTravel.LocationService
+WORKDIR /src/HappyTravel.LocationService
 RUN dotnet build -c Release -o /app
 
 FROM build AS publish
