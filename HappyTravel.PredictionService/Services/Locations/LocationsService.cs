@@ -46,7 +46,10 @@ namespace HappyTravel.PredictionService.Services.Locations
                     .From(0)
                     .Size(MaxLocationsNumber),
                 cancellationToken);
-
+            
+            if (!response.IsValid && response.OriginalException is not null)
+                throw response.OriginalException;
+                
             return response.Documents.ToList();
         }
         
