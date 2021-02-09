@@ -1,0 +1,8 @@
+[
+    {"id": 1111, "name": "StartUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 1112, "name": "RemoveLocationsFromIndex", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 1113, "name": "LocationsReceivedFromMapper", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 1114, "name": "LocationsUploadedToIndex", "level": "Information", "source": "LocationsManagementService", "isException": false}, 
+    {"id": 1115, "name": "CompleteUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 1116, "name": "UploadingError", "level": "Critical", "source": "LocationsManagementService", "isException": false}
+]
