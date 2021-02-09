@@ -42,13 +42,13 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
             {
-                const int batchSize = 50000;
+                const int batchSize = 5000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
-                    if (locations == null || !locations.Any())
-                        continue;
                     if (isFailure)
                         return Result.Failure<int>(error);
+                    if (locations == null || !locations.Any())
+                        continue;
                     var (_, uploadFailure, uploadError) = await UploadToElasticsearch(index, locations, cancellationToken);
                     if (uploadFailure)
                         return Result.Failure<int>(uploadError);
