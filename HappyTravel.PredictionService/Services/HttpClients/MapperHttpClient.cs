@@ -18,11 +18,10 @@ namespace HappyTravel.PredictionService.Services.HttpClients
 {
     public class MapperHttpClient : IMapperHttpClient
     {
-        public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions, IHttpContextAccessor httpContextAccessor, ILogger<MapperHttpClient> logger)
+        public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions, IHttpContextAccessor httpContextAccessor)
         {
             _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
             _httpClient = httpClientFactory.CreateClient(HttpClientNames.MapperApi);
-            _logger = logger;
 
             if (_httpClient.DefaultRequestHeaders.Contains(HeaderNames.Authorization)) return;
             
@@ -62,6 +61,5 @@ namespace HappyTravel.PredictionService.Services.HttpClients
 
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly ILogger<MapperHttpClient> _logger;
     }
 }

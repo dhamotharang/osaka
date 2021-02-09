@@ -29,7 +29,7 @@ namespace HappyTravel.PredictionService.Controllers
         /// <param name="cancellationToken"></param>
         [HttpPost("re-upload")]
         [ProducesResponseType((int) HttpStatusCode.Accepted)]
-        public IActionResult ReUpload(CancellationToken cancellationToken = default)
+        public IActionResult ReUpload()
         {
             if (_locationsUploadTokenSource.Token.CanBeCanceled)
                 _locationsUploadTokenSource.Cancel();
@@ -41,7 +41,7 @@ namespace HappyTravel.PredictionService.Controllers
                 using var scope = _serviceProvider.CreateScope();
 
                 var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
-                await locationsManagementService.ReUpload(cancellationToken);
+                await locationsManagementService.ReUpload(_locationsUploadTokenSource.Token);
             }, _locationsUploadTokenSource.Token);
 
             return Accepted();

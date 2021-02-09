@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.MultiLanguage;
 using HappyTravel.PredictionService.Infrastructure;
+using HappyTravel.PredictionService.Infrastructure.Logging;
 using HappyTravel.PredictionService.Models;
 using HappyTravel.PredictionService.Services.HttpClients;
 using Microsoft.Extensions.Logging;
@@ -30,14 +31,25 @@ namespace HappyTravel.PredictionService.Services.Locations
         
         public async Task<Result<int>> ReUpload(CancellationToken cancellationToken = default)
         {
+            _logger.LogStartUploadingLocations("Start locations upload");
+            
             var languageCode = LanguagesHelper.GetLanguageCode(Languages.English).ToLowerInvariant();
             if (!ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, languageCode, out var index))
-                return Result.Failure<int>($"Index with the language '{languageCode}' doesn't exist");
+            {
+                var error = $"Index with the language '{languageCode}' doesn't exist";
+                _logger.LogUploadingError(error);
+                return Result.Failure<int>(error);
+            }
 
+            _logger.LogRemoveLocationsFromIndex($"Remove all locations from the Elasticsearch index '{index}'");
+            
             var (_, removeFailure, removeError) = await RemoveAllFromIndex(index!, cancellationToken);
             if (removeFailure)
+            {
+                _logger.LogUploadingError(removeError);
                 return Result.Failure<int>(removeError);
-            
+            }
+
             var locationsUploaded = 0;
             
             foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
@@ -46,15 +58,30 @@ namespace HappyTravel.PredictionService.Services.Locations
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
                     if (isFailure)
+                    {
+                        _logger.LogUploadingError(error);
                         return Result.Failure<int>(error);
-                    if (locations == null || !locations.Any())
+                    }
+
+                    _logger.LogLocationsReceivedFromMapper($"'{locations.Count}' locations received from the mapper ");
+                    
+                    if (!locations.Any())
                         continue;
+                    
                     var (_, uploadFailure, uploadError) = await UploadToElasticsearch(index, locations, cancellationToken);
                     if (uploadFailure)
+                    {
+                        _logger.LogUploadingError(error);
                         return Result.Failure<int>(uploadError);
+                    }
+
+                    _logger.LogLocationsUploadedToIndex($"'{locations.Count}' locations uploaded to the the Elasticsearch index '{index}'");
+                    
                     locationsUploaded += locations.Count;
                 }
             }
+
+            _logger.LogCompleteUploadingLocations($"Uploading to the Elasticsearch index '{index}' has been completed. The total number of uploaded locations is '{locationsUploaded}'");
             
             return Result.Success(locationsUploaded);
         }
