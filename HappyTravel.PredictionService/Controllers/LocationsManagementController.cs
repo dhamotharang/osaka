@@ -1,11 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using HappyTravel.PredictionService.Filters.Authorization;
 using HappyTravel.PredictionService.Services.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HappyTravel.PredictionService.Controllers
 {
@@ -16,9 +17,9 @@ namespace HappyTravel.PredictionService.Controllers
     [Authorize(Policy = Policies.OnlyManagerClient)]
     public class LocationsManagementController : BaseController
     {
-        public LocationsManagementController(ILocationsManagementService locationsManagementService)
+        public LocationsManagementController(IServiceProvider serviceProvider)
         {
-            _locationsManagementService = locationsManagementService;
+            _serviceProvider = serviceProvider;
         }
 
         
@@ -26,20 +27,28 @@ namespace HappyTravel.PredictionService.Controllers
         /// Re-uploads locations from the mapper
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>Number of locations</returns>
         [HttpPost("re-upload")]
-        [ProducesResponseType(typeof(int), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> ReUpload(CancellationToken cancellationToken = default)
+        [ProducesResponseType((int) HttpStatusCode.Accepted)]
+        public IActionResult ReUpload(CancellationToken cancellationToken = default)
         {
-            var (_, isFailure, uploaded, error) = await _locationsManagementService.ReUpload(cancellationToken);
+            if (_locationsUploadTokenSource.Token.CanBeCanceled)
+                _locationsUploadTokenSource.Cancel();
 
-            return !isFailure
-                ? Ok($"Locations uploaded '{uploaded}'")
-                : BadRequestWithProblemDetails(error);
+            _locationsUploadTokenSource = new CancellationTokenSource(TimeSpan.FromDays(1));
+
+            Task.Run(async () =>
+            {
+                using var scope = _serviceProvider.CreateScope();
+
+                var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
+                await locationsManagementService.ReUpload(cancellationToken);
+            }, _locationsUploadTokenSource.Token);
+
+            return Accepted();
         }
 
         
-        private readonly ILocationsManagementService _locationsManagementService;
+        private readonly IServiceProvider _serviceProvider;
+        private static CancellationTokenSource _locationsUploadTokenSource = new (TimeSpan.FromHours(8));
     }
 }
