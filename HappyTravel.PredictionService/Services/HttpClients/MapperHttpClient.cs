@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -7,19 +8,21 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.PredictionService.Infrastructure;
 using HappyTravel.PredictionService.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace HappyTravel.PredictionService.Services.HttpClients
 {
-    public class StaticDataMapperHttpClient : IStaticDataMapperHttpClient
+    public class MapperHttpClient : IMapperHttpClient
     {
-        public StaticDataMapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions,
-            ILogger<StaticDataMapperHttpClient> logger)
+        public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions, IHttpContextAccessor httpContextAccessor, ILogger<MapperHttpClient> logger)
         {
-            _httpClientFactory = httpClientFactory;
             _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClientFactory.CreateClient(HttpClientNames.MapperApi);
             _logger = logger;
         }
 
@@ -27,12 +30,14 @@ namespace HappyTravel.PredictionService.Services.HttpClients
         public Task<Result<List<Location>>> GetLocations(MapperLocationTypes locationType, string languageCode, DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default)
             => Execute<List<Location>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/location-mappings/locations/?locationType={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
 
-
+        
         private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = "", CancellationToken cancellationToken = default)
         {
-            var httpClient = _httpClientFactory.CreateClient(HttpClientNames.MapperApi);
-            httpClient.DefaultRequestHeaders.Add("Accept-Language", languageCode);
-            var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            var authToken = _httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
+            _httpClient.DefaultRequestHeaders.Add(HeaderNames.AcceptLanguage, languageCode);
+            _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
+
+            var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
             var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
             if (responseMessage.IsSuccessStatusCode)
@@ -47,13 +52,14 @@ namespace HappyTravel.PredictionService.Services.HttpClients
             {
                 error = $"Reason {responseMessage.ReasonPhrase}, Code: {responseMessage.StatusCode}";
             }
-            
+
             return Result.Failure<TResponse>(error);
         }
 
 
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly ILogger<StaticDataMapperHttpClient> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<MapperHttpClient> _logger;
     }
 }

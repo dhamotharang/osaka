@@ -64,6 +64,7 @@ namespace HappyTravel.PredictionService
                 });
             
             services.ConfigureAuthentication(_configuration, _hostEnvironment, vaultClient);
+            services.AddHttpContextAccessor();
             services.AddHealthChecks();
             
             services.AddProblemDetailsErrorHandling(); 

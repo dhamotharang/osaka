@@ -19,12 +19,12 @@ namespace HappyTravel.PredictionService.Services.Locations
 {
     public class LocationsManagementService : ILocationsManagementService
     {
-        public LocationsManagementService(IElasticClient elasticClient, IStaticDataMapperHttpClient staticDataMapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<LocationsManagementService> logger)
+        public LocationsManagementService(IElasticClient elasticClient, IMapperHttpClient mapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<LocationsManagementService> logger)
         {
             _elasticClient = elasticClient;
             _logger = logger;
             _indexOptions = indexOptions.Value;
-            _staticDataMapperHttpClient = staticDataMapperHttpClient;
+            _mapperHttpClient = mapperHttpClient;
         }
 
         
@@ -45,7 +45,7 @@ namespace HappyTravel.PredictionService.Services.Locations
                 const int batchSize = 50000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
-                    if (!locations.Any())
+                    if (locations == null || !locations.Any())
                         continue;
                     if (isFailure)
                         return Result.Failure<int>(error);
@@ -69,7 +69,7 @@ namespace HappyTravel.PredictionService.Services.Locations
                 cancellationToken.ThrowIfCancellationRequested();
                 bool isFailure;
                 string error;
-                (_, isFailure, locations, error) = await _staticDataMapperHttpClient.GetLocations(locationType, languageCode, default, skip, batchSize, cancellationToken);
+                (_, isFailure, locations, error) = await _mapperHttpClient.GetLocations(locationType, languageCode, default, skip, batchSize, cancellationToken);
                 if (isFailure)
                     yield return Result.Failure<List<Location>>(error);
                 
@@ -147,7 +147,7 @@ namespace HappyTravel.PredictionService.Services.Locations
         }
         
 
-        private readonly IStaticDataMapperHttpClient _staticDataMapperHttpClient;
+        private readonly IMapperHttpClient _mapperHttpClient;
         private readonly IElasticClient _elasticClient;
         private readonly IndexOptions _indexOptions;
         private readonly ILogger<LocationsManagementService> _logger;
