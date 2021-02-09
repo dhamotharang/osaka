@@ -21,9 +21,13 @@ namespace HappyTravel.PredictionService.Services.HttpClients
         public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions, IHttpContextAccessor httpContextAccessor, ILogger<MapperHttpClient> logger)
         {
             _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
-            _httpContextAccessor = httpContextAccessor;
             _httpClient = httpClientFactory.CreateClient(HttpClientNames.MapperApi);
             _logger = logger;
+
+            if (_httpClient.DefaultRequestHeaders.Contains(HeaderNames.Authorization)) return;
+            
+            var authToken = httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
+            _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
         }
 
 
@@ -33,10 +37,9 @@ namespace HappyTravel.PredictionService.Services.HttpClients
         
         private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = "", CancellationToken cancellationToken = default)
         {
-            var authToken = _httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
-            _httpClient.DefaultRequestHeaders.Add(HeaderNames.AcceptLanguage, languageCode);
-            _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
-
+            if (!_httpClient.DefaultRequestHeaders.Contains(HeaderNames.AcceptLanguage))
+                _httpClient.DefaultRequestHeaders.Add(HeaderNames.AcceptLanguage, languageCode);
+            
             var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
             var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
@@ -59,7 +62,6 @@ namespace HappyTravel.PredictionService.Services.HttpClients
 
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<MapperHttpClient> _logger;
     }
 }
