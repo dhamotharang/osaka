@@ -34,7 +34,7 @@ namespace HappyTravel.PredictionService.Controllers
             if (_locationsUploadTokenSource.Token.CanBeCanceled)
                 _locationsUploadTokenSource.Cancel();
 
-            _locationsUploadTokenSource = new CancellationTokenSource(TimeSpan.FromDays(1));
+            _locationsUploadTokenSource = new CancellationTokenSource(TimeSpan.FromHours(8));
 
             Task.Run(async () =>
             {
