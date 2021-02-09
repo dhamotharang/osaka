@@ -42,7 +42,7 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
             {
-                const int batchSize = 5000;
+                const int batchSize = 20000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
                     if (isFailure)
