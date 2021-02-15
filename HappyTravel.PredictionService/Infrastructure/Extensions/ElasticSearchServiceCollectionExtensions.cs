@@ -39,49 +39,45 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
 
                 var client = new ElasticClient(connectionSettings);
 
-                InitializeIndex(client, indexes);
+                client.CreateIndexes(indexes);
 
                 return client;
             });
         }
 
         
-        private static void InitializeIndex(IElasticClient client, Dictionary<string, string> indexes)
+        public static CreateIndexResponse CreateIndexes(this IElasticClient client, Dictionary<string, string> indexes)
         {
-            InitializeEnglishIndex();
+            ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
 
-            void InitializeEnglishIndex()
-            {
-                ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
-
-                var response = client.Indices.Create(indexEn,
-                    index => index
-                        .Settings(settings => settings.Analysis(analysis =>
-                            analysis.TokenFilters(filter =>
-                                    filter.SynonymGraph( "synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(Synonyms)).Stop("stopwords_filter",
-                                            stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase()))
-                                .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
-                                    predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard")))))
-                        .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
-                                properties.Keyword(property => property.Name(prediction => prediction.Id))
-                                    .Keyword(completion => completion.Name(location => location.Country))
-                                    .Keyword(completion => completion.Name(location => location.Locality))
-                                    .Keyword(completion => completion.Name(location => location.Name))
-                                    .Completion(completion => completion.Name(location => location.Suggestion)
-                                        .Analyzer("predictions_analyzer")
-                                        .SearchAnalyzer("predictions_analyzer")
-                                        .PreserveSeparators(false)
-                                        .PreservePositionIncrements(false)
-                                        .Contexts(context =>
-                                            context.Category(category => category.Name("type").Path(location => location.LocationType))
-                                                   .Category(category => category.Name("country").Path(location => location.Country))
-                                                   .Category(category => category.Name("locality").Path(location => location.Locality))))
-                                    .Keyword(property => property.Name(prediction => prediction.CountryCode))
-                                    .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
-                                    .Number(property => property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
-                                    .Keyword(property => property.Name(prediction => prediction.LocationType)))
-                            .AutoMap()));
-            }
+            return client.Indices.Create(indexEn,
+                index => index
+                    .Settings(settings => settings.Analysis(analysis =>
+                        analysis.TokenFilters(filter =>
+                                filter.SynonymGraph("synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(Synonyms))
+                                    .Stop("stopwords_filter", stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase()))
+                            .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
+                                predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard")))))
+                    .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
+                            properties.Keyword(property => property.Name(prediction => prediction.Id))
+                                .Keyword(completion => completion.Name(location => location.Country))
+                                .Keyword(completion => completion.Name(location => location.Locality))
+                                .Keyword(completion => completion.Name(location => location.Name))
+                                .Completion(completion => completion.Name(location => location.Suggestion)
+                                    .Analyzer("predictions_analyzer")
+                                    .SearchAnalyzer("predictions_analyzer")
+                                    .PreserveSeparators(false)
+                                    .PreservePositionIncrements(false)
+                                    .Contexts(context =>
+                                        context.Category(category => category.Name("type").Path(location => location.LocationType))
+                                            .Category(category => category.Name("country").Path(location => location.Country))
+                                            .Category(category => category.Name("locality").Path(location => location.Locality))))
+                                .Keyword(property => property.Name(prediction => prediction.CountryCode))
+                                .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
+                                .Number(property =>
+                                    property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
+                                .Keyword(property => property.Name(prediction => prediction.LocationType)))
+                        .AutoMap()));
         }
 
         

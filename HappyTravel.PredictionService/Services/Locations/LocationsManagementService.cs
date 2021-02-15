@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.MultiLanguage;
 using HappyTravel.PredictionService.Infrastructure;
+using HappyTravel.PredictionService.Infrastructure.Extensions;
 using HappyTravel.PredictionService.Infrastructure.Logging;
 using HappyTravel.PredictionService.Models;
 using HappyTravel.PredictionService.Models.Elasticsearch;
@@ -45,7 +46,7 @@ namespace HappyTravel.PredictionService.Services.Locations
 
             _logger.LogRemoveLocationsFromIndex($"Remove all locations from the Elasticsearch index '{index}'");
             
-            var (_, removeFailure, removeError) = await RemoveAllFromIndex(index!, cancellationToken);
+            var (_, removeFailure, removeError) = await ReCreateIndex(index!, cancellationToken);
             if (removeFailure)
             {
                 _logger.LogUploadingError(removeError);
@@ -123,9 +124,10 @@ namespace HappyTravel.PredictionService.Services.Locations
         }
 
 
-        private async Task<Result> RemoveAllFromIndex(string index, CancellationToken cancellationToken = default)
+        private async Task<Result> ReCreateIndex(string index, CancellationToken cancellationToken = default)
         {
-            var response = await _elasticClient.DeleteByQueryAsync<Models.Elasticsearch.Location>(request => request.Index(index).MatchAll(), cancellationToken);
+            await _elasticClient.Indices.DeleteAsync(index, ct: cancellationToken);
+            var response = _elasticClient.CreateIndexes(_indexOptions.Indexes);
             
             if (response.OriginalException is not null)
                 throw response.OriginalException;
