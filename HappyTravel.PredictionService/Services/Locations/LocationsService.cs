@@ -35,17 +35,17 @@ namespace HappyTravel.PredictionService.Services.Locations
             const string countrySuggester = "countrySuggester";
             const string localitySuggester = "localitySuggester";
             const string accommodationSuggester = "accommodationSuggester";
-            const int maxLocationsCount = 10;
+            const int maxLocationCount = 10;
             
             var searchResponse = await _elasticClient.SearchAsync<Location>(search => search.Index(index).Suggest(suggest => CreateSuggestionRequests(suggest, query)), cancellationToken);
             
             var result = GetLocations(searchResponse, countrySuggester).ToList();
-            if (result.Count == maxLocationsCount)
+            if (result.Count == maxLocationCount)
                 return result;
 
             var locations = GetLocations(searchResponse, localitySuggester, result.Count);
             result.AddRange(locations);
-            if (result.Count == maxLocationsCount)
+            if (result.Count == maxLocationCount)
                 return result;
 
             locations = GetLocations(searchResponse, accommodationSuggester, result.Count);
@@ -66,16 +66,16 @@ namespace HappyTravel.PredictionService.Services.Locations
                     => suggester.Field(field => field.Suggestion)
                         .Prefix(query)
                         .Contexts(context => context.Context("type", category => category.Context(GetContextName(contextType))))
-                        .Size(maxLocationsCount);
+                        .Size(maxLocationCount);
             }
 
 
             static string GetContextName(MapperLocationTypes type) => type.ToString("G").ToLowerInvariant();
             
                 
-            static IEnumerable<Location> GetLocations(ISearchResponse<Location> searchResponse, string suggester, int foundedLocationsCount = 0)
+            static IEnumerable<Location> GetLocations(ISearchResponse<Location> searchResponse, string suggester, int foundedLocationCount = 0)
                 => searchResponse.Suggest[suggester].SelectMany(c => c.Options)
-                    .Select(o => o.Source).Take(maxLocationsCount - foundedLocationsCount);
+                    .Select(o => o.Source).Take(maxLocationCount - foundedLocationCount);
         }
      
 
