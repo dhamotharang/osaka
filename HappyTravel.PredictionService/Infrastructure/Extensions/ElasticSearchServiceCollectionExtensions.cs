@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 using HappyTravel.MultiLanguage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,18 +40,18 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
 
                 var client = new ElasticClient(connectionSettings);
 
-                client.CreateIndexes(indexes);
+                client.CreateIndexes(indexes).GetAwaiter().GetResult();
 
                 return client;
             });
         }
 
         
-        public static CreateIndexResponse CreateIndexes(this IElasticClient client, Dictionary<string, string> indexes)
+        public static Task<CreateIndexResponse> CreateIndexes(this IElasticClient client, Dictionary<string, string> indexes)
         {
             ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
 
-            return client.Indices.Create(indexEn,
+            return client.Indices.CreateAsync(indexEn,
                 index => index
                     .Settings(settings => settings.Analysis(analysis =>
                         analysis.TokenFilters(filter =>

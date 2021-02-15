@@ -116,7 +116,6 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
             
-            
             if (!response.IsValid) 
                 return Result.Failure(response.ToString());
             
@@ -127,7 +126,7 @@ namespace HappyTravel.PredictionService.Services.Locations
         private async Task<Result> ReCreateIndex(string index, CancellationToken cancellationToken = default)
         {
             await _elasticClient.Indices.DeleteAsync(index, ct: cancellationToken);
-            var response = _elasticClient.CreateIndexes(_indexOptions.Indexes);
+            var response = await _elasticClient.CreateIndexes(_indexOptions.Indexes);
             
             if (response.OriginalException is not null)
                 throw response.OriginalException;
