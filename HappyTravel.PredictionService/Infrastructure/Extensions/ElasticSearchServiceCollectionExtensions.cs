@@ -14,9 +14,8 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
         public static IServiceCollection AddElasticsearchClient(this IServiceCollection services,
             IConfiguration configuration, VaultClient.VaultClient vaultClient, Dictionary<string, string> indexes)
         {
-            var clientSettings =
-                vaultClient.Get(configuration["Elasticsearch:ClientSettings"]).GetAwaiter().GetResult();
-
+            var clientSettings = vaultClient.Get(configuration["Elasticsearch:ClientSettings"]).GetAwaiter().GetResult();
+            
             return services.AddSingleton<IElasticClient>(_ =>
             {
                 ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
@@ -38,6 +37,9 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
                             .EnableDebugMode();
                 }
 
+                if (clientSettings.TryGetValue("requestTimeoutInSeconds", out var requestTimeoutInSeconds))
+                    connectionSettings.RequestTimeout(TimeSpan.FromSeconds(Convert.ToInt32(requestTimeoutInSeconds)));
+                
                 var client = new ElasticClient(connectionSettings);
 
                 client.CreateIndexes(indexes).GetAwaiter().GetResult();
