@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -116,13 +117,36 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
             
-            if (!response.IsValid) 
-                return Result.Failure(response.ToString());
+            if (!response.IsValid)
+                return Result.Failure(BuildError());
             
             return Result.Success();
+
+            
+            string BuildError()
+            {
+                var stringBuilder = new StringBuilder();
+                var itemsWithErrors = response.ItemsWithErrors;
+                if (itemsWithErrors != null && itemsWithErrors.Any())
+                    stringBuilder.AppendLine($"{nameof(itemsWithErrors)}: {string.Join(", ", itemsWithErrors.Select(i => i.Error.ToString()))}");
+
+                if (!string.IsNullOrEmpty(response.DebugInformation))
+                    stringBuilder.AppendLine($"{nameof(response.DebugInformation)}: {response.DebugInformation}");
+
+                if (response.OriginalException != null)
+                    stringBuilder.AppendLine($"{nameof(response.OriginalException)}: {response.OriginalException}");
+
+                if (response.ApiCall != null)
+                    stringBuilder.AppendLine($"{nameof(response.ApiCall)}: {response.ApiCall}");
+
+                if (response.ServerError != null)
+                    stringBuilder.AppendLine($"{nameof(response.ServerError)}: {response.ServerError}");
+                    
+                return stringBuilder.ToString();
+            }
         }
-
-
+        
+        
         private async Task<Result> ReCreateIndex(string index, CancellationToken cancellationToken = default)
         {
             await _elasticClient.Indices.DeleteAsync(index, ct: cancellationToken);
