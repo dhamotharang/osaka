@@ -31,6 +31,10 @@ namespace HappyTravel.PredictionService.Infrastructure.Logging
                 new EventId(1116, "UploadingError"),
                 $"CRITICAL | LocationsManagementService: {{message}}");
             
+            PredictionsQueryOccured = LoggerMessage.Define<string>(LogLevel.Information,
+                new EventId(1120, "PredictionsQuery"),
+                $"INFORMATION | LocationsService: {{message}}");
+            
         }
     
                 
@@ -51,6 +55,9 @@ namespace HappyTravel.PredictionService.Infrastructure.Logging
                 
          public static void LogUploadingError(this ILogger logger, string message)
             => UploadingErrorOccured(logger, message, null);
+                
+         public static void LogPredictionsQuery(this ILogger logger, string message)
+            => PredictionsQueryOccured(logger, message, null);
     
     
         
@@ -65,5 +72,7 @@ namespace HappyTravel.PredictionService.Infrastructure.Logging
         private static readonly Action<ILogger, string, Exception> CompleteUploadingLocationsOccured;
         
         private static readonly Action<ILogger, string, Exception> UploadingErrorOccured;
+        
+        private static readonly Action<ILogger, string, Exception> PredictionsQueryOccured;
     }
 }

@@ -13,8 +13,9 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
         public static IServiceCollection AddElasticsearchClient(this IServiceCollection services,
             IConfiguration configuration, VaultClient.VaultClient vaultClient, Dictionary<string, string> indexes)
         {
-            var clientSettings = vaultClient.Get(configuration["Elasticsearch:ClientSettings"]).GetAwaiter().GetResult();
-            
+            var clientSettings =
+                vaultClient.Get(configuration["Elasticsearch:ClientSettings"]).GetAwaiter().GetResult();
+
             return services.AddSingleton<IElasticClient>(_ =>
             {
                 ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
@@ -37,15 +38,15 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
                 }
 
                 var client = new ElasticClient(connectionSettings);
-                
-                ConfigurePredictions(client, indexes);
-                
+
+                InitializeIndex(client, indexes);
+
                 return client;
             });
         }
 
         
-        private static void ConfigurePredictions(IElasticClient client, Dictionary<string, string> indexes)
+        private static void InitializeIndex(IElasticClient client, Dictionary<string, string> indexes)
         {
             InitializeEnglishIndex();
 
@@ -53,33 +54,47 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
             {
                 ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
 
-                client.Indices.Create(indexEn,
+                var response = client.Indices.Create(indexEn,
                     index => index
                         .Settings(settings => settings.Analysis(analysis =>
-                            analysis
-                                .TokenFilters(filter => filter.EdgeNGram("predictions_filter",
-                                    tokenFilter => tokenFilter.MinGram(2).MaxGram(15)))
+                            analysis.TokenFilters(filter =>
+                                    filter.SynonymGraph( "synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(Synonyms)).Stop("stopwords_filter",
+                                            stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase()))
                                 .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
-                                    predictionsAnalyzer =>
-                                        predictionsAnalyzer.Filters("lowercase", "asciifolding", "predictions_filter")
-                                            .Tokenizer("standard")))))
+                                    predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard")))))
                         .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
                                 properties.Keyword(property => property.Name(prediction => prediction.Id))
-                                    .Text(property => property.Name(prediction => prediction.Name)
-                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
-                                    .Text(property => property.Name(prediction => prediction.Locality)
-                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
-                                    .Text(property => property.Name(prediction => prediction.Country)
-                                            .Fields(field => field.Keyword(keyword => keyword.Name("keyword"))))
-                                    .Text(property => property.Name(prediction => prediction.PredictionText)
-                                            .Analyzer("predictions_analyzer")
-                                            .SearchAnalyzer("predictions_analyzer"))
+                                    .Keyword(completion => completion.Name(location => location.Country))
+                                    .Keyword(completion => completion.Name(location => location.Locality))
+                                    .Keyword(completion => completion.Name(location => location.Name))
+                                    .Completion(completion => completion.Name(location => location.Suggestion)
+                                        .Analyzer("predictions_analyzer")
+                                        .SearchAnalyzer("predictions_analyzer")
+                                        .PreserveSeparators(false)
+                                        .PreservePositionIncrements(false)
+                                        .Contexts(context =>
+                                            context.Category(category => category.Name("type").Path(location => location.LocationType))
+                                                   .Category(category => category.Name("country").Path(location => location.Country))
+                                                   .Category(category => category.Name("locality").Path(location => location.Locality))))
                                     .Keyword(property => property.Name(prediction => prediction.CountryCode))
                                     .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
-                                    .Number(property => property.Name(prediction => prediction.DistanceInMeters)
-                                        .Type(NumberType.Double)))
+                                    .Number(property => property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
+                                    .Keyword(property => property.Name(prediction => prediction.LocationType)))
                             .AutoMap()));
             }
         }
+
+        
+        /// <summary>
+        /// Todo read from file to prevent unnecessarily cluster size increases 
+        /// </summary>
+        private static readonly string[] Synonyms =
+        {
+            "russia => russian federation",
+            "usa, united states of america => united states"
+        };
+
+        
+        private static readonly string[] StopWords = {"the"};
     }
 }

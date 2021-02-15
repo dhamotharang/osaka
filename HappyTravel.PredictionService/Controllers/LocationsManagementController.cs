@@ -26,7 +26,6 @@ namespace HappyTravel.PredictionService.Controllers
         /// <summary>
         /// Re-uploads locations from the mapper
         /// </summary>
-        /// <param name="cancellationToken"></param>
         [HttpPost("re-upload")]
         [ProducesResponseType((int) HttpStatusCode.Accepted)]
         public IActionResult ReUpload()
