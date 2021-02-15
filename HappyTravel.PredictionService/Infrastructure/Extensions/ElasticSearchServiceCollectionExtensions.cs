@@ -86,7 +86,7 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
 
         
         /// <summary>
-        /// Todo read from file to prevent unnecessarily cluster size increases 
+        /// Todo https://happytravel.atlassian.net/browse/NIJO-1297
         /// </summary>
         private static readonly string[] Synonyms =
         {
