@@ -2,10 +2,8 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using HappyTravel.PredictionService.Models.Response;
 using HappyTravel.PredictionService.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.PredictionService.Controllers

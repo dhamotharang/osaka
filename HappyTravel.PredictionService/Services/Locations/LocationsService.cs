@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,44 +35,47 @@ namespace HappyTravel.PredictionService.Services.Locations
             const string countrySuggester = "countrySuggester";
             const string localitySuggester = "localitySuggester";
             const string accommodationSuggester = "accommodationSuggester";
-            const int maxLocationsNumber = 10;
+            const int maxLocationsCount = 10;
             
-            var searchResponse = await _elasticClient.SearchAsync<Location>(search => search.Index(index).Suggest(CreateSuggestionRequests), cancellationToken);
+            var searchResponse = await _elasticClient.SearchAsync<Location>(search => search.Index(index).Suggest(suggest => CreateSuggestionRequests(suggest, query)), cancellationToken);
             
-            return GenerateResult();
-
-            
-            IPromise<ISuggestContainer> CreateSuggestionRequests(SuggestContainerDescriptor<Location> suggestContainer) =>
-                suggestContainer.Completion(countrySuggester, suggester => suggester.Field(field => field.Suggestion).Prefix(query).Contexts(context => context.Context("type", category => category.Context(GetContextName(MapperLocationTypes.Country)))).Size(maxLocationsNumber))
-                    .Completion(localitySuggester, suggester => suggester.Field(field => field.Suggestion).Prefix(query).Contexts(context => context.Context("type", category => category.Context(GetContextName(MapperLocationTypes.Locality)))).Size(maxLocationsNumber))
-                    .Completion(accommodationSuggester, suggester => suggester.Field(field => field.Suggestion).Prefix(query).Contexts(context => context.Context("type", category => category.Context(GetContextName(MapperLocationTypes.Accommodation)))).Size(maxLocationsNumber));
-
-            
-            string GetContextName(MapperLocationTypes type) => type.ToString("G").ToLowerInvariant();
-
-            
-            List<Location> GenerateResult()
-            {
-                var result = new List<Location>(0);
-                result = GetLocations(countrySuggester).ToList();
-                if (result.Count == maxLocationsNumber)
-                    return result;
-
-                var locations = GetLocations(localitySuggester);
-                result.AddRange(locations);
-                if (result.Count == maxLocationsNumber)
-                    return result;
-
-                locations = GetLocations(accommodationSuggester);
-                result.AddRange(locations);
-            
+            var result = GetLocations(searchResponse, countrySuggester).ToList();
+            if (result.Count == maxLocationsCount)
                 return result;
 
+            var locations = GetLocations(searchResponse, localitySuggester, result.Count);
+            result.AddRange(locations);
+            if (result.Count == maxLocationsCount)
+                return result;
+
+            locations = GetLocations(searchResponse, accommodationSuggester, result.Count);
+            result.AddRange(locations);
+            
+            return result;
+
+            
+           static IPromise<ISuggestContainer> CreateSuggestionRequests(SuggestContainerDescriptor<Location> suggestContainer, string query)
+            {
+                return suggestContainer
+                    .Completion(countrySuggester,suggester => AddSuggester(suggester, MapperLocationTypes.Country))
+                    .Completion(localitySuggester,suggester => AddSuggester(suggester, MapperLocationTypes.Locality))
+                    .Completion(accommodationSuggester, suggester => AddSuggester(suggester, MapperLocationTypes.Accommodation));
+
                 
-                IEnumerable<Location> GetLocations(string suggester)
-                    => searchResponse.Suggest[suggester].SelectMany(c => c.Options)
-                        .Select(o => o.Source).Take(maxLocationsNumber - result!.Count);
+                ICompletionSuggester AddSuggester(CompletionSuggesterDescriptor<Location> suggester, MapperLocationTypes contextType) 
+                    => suggester.Field(field => field.Suggestion)
+                        .Prefix(query)
+                        .Contexts(context => context.Context("type", category => category.Context(GetContextName(contextType))))
+                        .Size(maxLocationsCount);
             }
+
+
+            static string GetContextName(MapperLocationTypes type) => type.ToString("G").ToLowerInvariant();
+            
+                
+            static IEnumerable<Location> GetLocations(ISearchResponse<Location> searchResponse, string suggester, int foundedLocationsCount = 0)
+                => searchResponse.Suggest[suggester].SelectMany(c => c.Options)
+                    .Select(o => o.Source).Take(maxLocationsCount - foundedLocationsCount);
         }
      
 
