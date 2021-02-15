@@ -2,7 +2,6 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using HappyTravel.PredictionService.Models.Response;
 using HappyTravel.PredictionService.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -28,14 +27,8 @@ namespace HappyTravel.PredictionService.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(List<Prediction>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> SearchPredictions([FromQuery] string query, [FromQuery] int skip = 0, [FromQuery] int top = 10, CancellationToken cancellationToken = default)
-        {
-            var (_, isFailure, predictions, error) = await _predictionsService.Search(query, skip, top, cancellationToken);
-            
-            return isFailure 
-                ? BadRequestWithProblemDetails(error) 
-                : Ok(predictions);
-        }
+        public async Task<IActionResult> SearchPredictions([FromQuery] string query, CancellationToken cancellationToken = default)
+            => Ok(await _predictionsService.Search(query, cancellationToken));
 
 
         private readonly IPredictionsService _predictionsService;

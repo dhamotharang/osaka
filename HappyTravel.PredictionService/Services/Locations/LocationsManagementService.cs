@@ -9,11 +9,13 @@ using HappyTravel.MultiLanguage;
 using HappyTravel.PredictionService.Infrastructure;
 using HappyTravel.PredictionService.Infrastructure.Logging;
 using HappyTravel.PredictionService.Models;
+using HappyTravel.PredictionService.Models.Elasticsearch;
 using HappyTravel.PredictionService.Services.HttpClients;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
 using IndexOptions = HappyTravel.PredictionService.Options.IndexOptions;
+using Location = HappyTravel.PredictionService.Models.Location;
 using Result = CSharpFunctionalExtensions.Result;
 
 namespace HappyTravel.PredictionService.Services.Locations
@@ -74,10 +76,10 @@ namespace HappyTravel.PredictionService.Services.Locations
                         _logger.LogUploadingError(error);
                         return Result.Failure<int>(uploadError);
                     }
-
-                    _logger.LogLocationsUploadedToIndex($"'{locations.Count}' locations uploaded to the the Elasticsearch index '{index}'");
                     
                     locationsUploaded += locations.Count;
+
+                    _logger.LogLocationsUploadedToIndex($"'{locationsUploaded}' locations uploaded to the the Elasticsearch index '{index}'");
                 }
             }
 
@@ -112,7 +114,8 @@ namespace HappyTravel.PredictionService.Services.Locations
             var elasticsearchLocations = Build(locations);
             
             var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
-
+            
+            
             if (!response.IsValid) 
                 return Result.Failure(response.ToString());
             
@@ -143,18 +146,45 @@ namespace HappyTravel.PredictionService.Services.Locations
             return new()
             {
                 Id = location.HtId,
-                HtId = location.HtId,
                 Name = location.Name,
                 Locality = location.Locality,
                 Country = location.Country,
                 CountryCode = location.CountryCode,
+                Suggestion = BuildSuggestion(location),
                 PredictionText = BuildPredictionText(location),
                 Coordinates = new GeoCoordinate(location.Coordinates.Latitude, location.Coordinates.Longitude),
                 DistanceInMeters = location.DistanceInMeters,
-                LocationType = location.LocationType,
+                LocationType = location.LocationType.ToString().ToLowerInvariant(),
                 Type = location.Type,
                 Modified = uploadedDate
             };
+        }
+
+
+        private static Suggestion BuildSuggestion(Location location)
+        {
+            var suggest = new Suggestion();
+
+            suggest.Input = location.LocationType switch
+            {
+                MapperLocationTypes.Country => new List<string> {location.Country},
+                MapperLocationTypes.Locality => new List<string>
+                {
+                    $"{location.Locality}",
+                    $"{location.Country} {location.Locality}",
+                    $"{location.Locality} {location.Country}"
+                },
+                MapperLocationTypes.Accommodation => new List<string>
+                {
+                    $"{location.Name}",
+                    $"{location.Country} {location.Name}",
+                    $"{location.Locality} {location.Name}",
+                    $"{location.Country} {location.Locality} {location.Name}",
+                },
+                _ => suggest.Input
+            };
+
+            return suggest;
         }
         
         

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using HappyTravel.PredictionService.Models.Elasticsearch;
 using HappyTravel.PredictionService.Models.Response;
 using HappyTravel.PredictionService.Services.Locations;
@@ -15,22 +14,12 @@ namespace HappyTravel.PredictionService.Services
         {
             _locationsService = locationsServices;
         }
-        
-        
-        public async Task<Result<List<Prediction>>> Search(string query, int skip = 0, int top = 10, CancellationToken cancellationToken = default)
-        {
-            var (_, isFailure, locations, error) = await _locationsService.Search(query, skip, top, cancellationToken);
-            
-            return isFailure
-                ? Result.Failure<List<Prediction>>(error)
-                : Build(locations);
-        }
 
+        public async Task<List<Prediction>> Search(string query, CancellationToken cancellationToken = default) =>
+            (await _locationsService.Search(query, cancellationToken)).Select(Build).ToList();
 
-        private List<Prediction> Build(List<Location> locations) => locations.Select(Build).ToList();
         
-
-        private Prediction Build(Location location) => new(location.HtId, location.PredictionText);
+        private Prediction Build(Location location) => new(location.HtId, location.PredictionText, string.Empty);
 
         
         private readonly ILocationsService _locationsService;
