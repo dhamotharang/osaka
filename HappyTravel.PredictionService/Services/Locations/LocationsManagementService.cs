@@ -75,7 +75,7 @@ namespace HappyTravel.PredictionService.Services.Locations
                     var (_, uploadFailure, uploadError) = await UploadToElasticsearch(index, locations, cancellationToken);
                     if (uploadFailure)
                     {
-                        _logger.LogUploadingError(error);
+                        _logger.LogUploadingError(uploadError);
                         return Result.Failure<int>(uploadError);
                     }
                     
@@ -126,6 +126,9 @@ namespace HappyTravel.PredictionService.Services.Locations
             string BuildError()
             {
                 var stringBuilder = new StringBuilder();
+
+                stringBuilder.AppendLine(response.ToString());
+                
                 var itemsWithErrors = response.ItemsWithErrors;
                 if (itemsWithErrors != null && itemsWithErrors.Any())
                     stringBuilder.AppendLine($"{nameof(itemsWithErrors)}: {string.Join(", ", itemsWithErrors.Select(i => i.Error.ToString()))}");
