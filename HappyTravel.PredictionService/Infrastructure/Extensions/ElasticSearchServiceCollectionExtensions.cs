@@ -52,12 +52,13 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
         public static Task<CreateIndexResponse> CreateIndexes(this IElasticClient client, Dictionary<string, string> indexes)
         {
             ElasticsearchHelper.TryGetIndex(indexes, Languages.English, out var indexEn);
-
+            var synonyms = ElasticSynonymsHelper.GetSynonyms();
+            
             return client.Indices.CreateAsync(indexEn,
                 index => index
                     .Settings(settings => settings.Analysis(analysis =>
                         analysis.TokenFilters(filter =>
-                                filter.SynonymGraph("synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(Synonyms))
+                                filter.SynonymGraph("synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(synonyms))
                                     .Stop("stopwords_filter", stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase()))
                             .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
                                 predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard")))))
@@ -82,16 +83,6 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
                                 .Keyword(property => property.Name(prediction => prediction.LocationType)))
                         .AutoMap()));
         }
-
-        
-        /// <summary>
-        /// Todo https://happytravel.atlassian.net/browse/NIJO-1297
-        /// </summary>
-        private static readonly string[] Synonyms =
-        {
-            "russia => russian federation",
-            "usa, united states of america => united states"
-        };
 
         
         private static readonly string[] StopWords = {"the"};
