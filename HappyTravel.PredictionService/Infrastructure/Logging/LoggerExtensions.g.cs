@@ -8,31 +8,31 @@ namespace HappyTravel.PredictionService.Infrastructure.Logging
         static LoggerExtensions()
         {
             StartUploadingLocationsOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1111, "StartUploadingLocations"),
+                new EventId(2001, "StartUploadingLocations"),
                 $"INFORMATION | LocationsManagementService: {{message}}");
             
             RemoveLocationsFromIndexOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1112, "RemoveLocationsFromIndex"),
+                new EventId(2002, "RemoveLocationsFromIndex"),
                 $"INFORMATION | LocationsManagementService: {{message}}");
             
             LocationsReceivedFromMapperOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1113, "LocationsReceivedFromMapper"),
+                new EventId(2003, "LocationsReceivedFromMapper"),
                 $"INFORMATION | LocationsManagementService: {{message}}");
             
             LocationsUploadedToIndexOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1114, "LocationsUploadedToIndex"),
+                new EventId(2004, "LocationsUploadedToIndex"),
                 $"INFORMATION | LocationsManagementService: {{message}}");
             
             CompleteUploadingLocationsOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1115, "CompleteUploadingLocations"),
+                new EventId(2005, "CompleteUploadingLocations"),
                 $"INFORMATION | LocationsManagementService: {{message}}");
             
             UploadingErrorOccured = LoggerMessage.Define<string>(LogLevel.Critical,
-                new EventId(1116, "UploadingError"),
+                new EventId(2006, "UploadingError"),
                 $"CRITICAL | LocationsManagementService: {{message}}");
             
             PredictionsQueryOccured = LoggerMessage.Define<string>(LogLevel.Information,
-                new EventId(1120, "PredictionsQuery"),
+                new EventId(2007, "PredictionsQuery"),
                 $"INFORMATION | LocationsService: {{message}}");
             
         }

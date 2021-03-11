@@ -44,8 +44,7 @@ namespace HappyTravel.PredictionService
                         });
                         logging.AddSentry(c =>
                         {
-                            c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint",
-                                hostingContext.Configuration);
+                            c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", hostingContext.Configuration);
                             c.Environment = env.EnvironmentName;
                         });
                     }

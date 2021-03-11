@@ -7,6 +7,7 @@ using HappyTravel.PredictionService.Services.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Sentry;
 
 namespace HappyTravel.PredictionService.Controllers
 {
@@ -41,8 +42,14 @@ namespace HappyTravel.PredictionService.Controllers
 
                 var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
                 await locationsManagementService.ReUpload(_locationsUploadTokenSource.Token);
-            }, _locationsUploadTokenSource.Token);
-
+            }, _locationsUploadTokenSource.Token).ContinueWith(t =>
+            {
+                if (t.Exception is not null)
+                {
+                    SentrySdk.CaptureException(t.Exception);
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+            
             return Accepted();
         }
 
