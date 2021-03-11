@@ -35,7 +35,7 @@ namespace HappyTravel.PredictionService.Services.Locations
         public async Task<Result<int>> ReUpload(CancellationToken cancellationToken = default)
         {
             _logger.LogStartUploadingLocations("Start locations upload");
-            
+
             var languageCode = LanguagesHelper.GetLanguageCode(Languages.English).ToLowerInvariant();
             if (!ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, languageCode, out var index))
             {
@@ -57,7 +57,7 @@ namespace HappyTravel.PredictionService.Services.Locations
             
             foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
             {
-                const int batchSize = 20000;
+                const int batchSize = 10000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
                     if (isFailure)
