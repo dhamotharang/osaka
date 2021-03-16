@@ -177,8 +177,11 @@ namespace HappyTravel.PredictionService.Services.Locations
                 MapperLocationTypes.Accommodation => new List<string>
                 {
                     $"{location.Name}",
-                    $"{location.Country} {location.Name}",
+                    $"{location.Name} {location.Locality} {location.Country}",
+                    $"{location.Name} {location.Country} {location.Locality}",
                     $"{location.Locality} {location.Name}",
+                    $"{location.Locality} {location.Country} {location.Name}",
+                    $"{location.Country} {location.Name}",
                     $"{location.Country} {location.Locality} {location.Name}",
                 },
                 _ => suggest.Input

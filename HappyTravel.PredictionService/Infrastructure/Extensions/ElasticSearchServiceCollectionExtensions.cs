@@ -72,6 +72,7 @@ namespace HappyTravel.PredictionService.Infrastructure.Extensions
                                     .SearchAnalyzer("predictions_analyzer")
                                     .PreserveSeparators(false)
                                     .PreservePositionIncrements(false)
+                                    .MaxInputLength(80)
                                     .Contexts(context =>
                                         context.Category(category => category.Name("type").Path(location => location.LocationType))
                                             .Category(category => category.Name("country").Path(location => location.Country))
