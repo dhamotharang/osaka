@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Nest;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public class ElasticSearchHealthCheck : IHealthCheck
     {

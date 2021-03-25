@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class AuthenticationCollectionExtensions
     {

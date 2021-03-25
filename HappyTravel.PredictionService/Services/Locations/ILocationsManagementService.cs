@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 
-namespace HappyTravel.PredictionService.Services.Locations
+namespace HappyTravel.Osaka.Api.Services.Locations
 {
     public interface ILocationsManagementService
     {

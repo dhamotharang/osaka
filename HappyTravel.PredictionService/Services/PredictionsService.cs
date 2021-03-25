@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HappyTravel.PredictionService.Models.Elasticsearch;
-using HappyTravel.PredictionService.Models.Response;
-using HappyTravel.PredictionService.Services.Locations;
+using HappyTravel.Osaka.Api.Models.Elasticsearch;
+using HappyTravel.Osaka.Api.Models.Response;
+using HappyTravel.Osaka.Api.Services.Locations;
 
-namespace HappyTravel.PredictionService.Services
+namespace HappyTravel.Osaka.Api.Services
 {
     public class PredictionsService : IPredictionsService
     {

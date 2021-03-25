@@ -6,20 +6,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.MultiLanguage;
-using HappyTravel.PredictionService.Infrastructure;
-using HappyTravel.PredictionService.Infrastructure.Extensions;
-using HappyTravel.PredictionService.Infrastructure.Logging;
-using HappyTravel.PredictionService.Models;
-using HappyTravel.PredictionService.Models.Elasticsearch;
-using HappyTravel.PredictionService.Services.HttpClients;
+using HappyTravel.Osaka.Api.Infrastructure;
+using HappyTravel.Osaka.Api.Infrastructure.Extensions;
+using HappyTravel.Osaka.Api.Infrastructure.Logging;
+using HappyTravel.Osaka.Api.Models;
+using HappyTravel.Osaka.Api.Models.Elasticsearch;
+using HappyTravel.Osaka.Api.Services.HttpClients;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
-using IndexOptions = HappyTravel.PredictionService.Options.IndexOptions;
-using Location = HappyTravel.PredictionService.Models.Location;
+using IndexOptions = HappyTravel.Osaka.Api.Options.IndexOptions;
+using Location = HappyTravel.Osaka.Api.Models.Location;
 using Result = CSharpFunctionalExtensions.Result;
 
-namespace HappyTravel.PredictionService.Services.Locations
+namespace HappyTravel.Osaka.Api.Services.Locations
 {
     public class LocationsManagementService : ILocationsManagementService
     {

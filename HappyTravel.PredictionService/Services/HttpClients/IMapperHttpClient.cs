@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.PredictionService.Models;
+using HappyTravel.Osaka.Api.Models;
 
-namespace HappyTravel.PredictionService.Services.HttpClients
+namespace HappyTravel.Osaka.Api.Services.HttpClients
 {
     public interface IMapperHttpClient
     {

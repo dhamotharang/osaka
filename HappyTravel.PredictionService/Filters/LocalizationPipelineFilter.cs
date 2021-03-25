@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 
-namespace HappyTravel.PredictionService.Filters
+namespace HappyTravel.Osaka.Api.Filters
 {
     public class LocalizationPipelineFilter
     {

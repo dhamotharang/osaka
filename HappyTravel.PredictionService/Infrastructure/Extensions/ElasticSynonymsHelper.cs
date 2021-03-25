@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class ElasticSynonymsHelper
     {

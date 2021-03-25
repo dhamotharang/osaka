@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using HappyTravel.PredictionService.Models.Response;
+using HappyTravel.Osaka.Api.Models.Response;
 
-namespace HappyTravel.PredictionService.Services
+namespace HappyTravel.Osaka.Api.Services
 {
     public interface IPredictionsService
     {

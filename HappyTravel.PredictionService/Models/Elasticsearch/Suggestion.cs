@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HappyTravel.PredictionService.Models.Elasticsearch
+namespace HappyTravel.Osaka.Api.Models.Elasticsearch
 {
     public class Suggestion
     {

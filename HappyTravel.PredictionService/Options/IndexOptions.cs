@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HappyTravel.PredictionService.Options
+namespace HappyTravel.Osaka.Api.Options
 {
     public class IndexOptions
     {

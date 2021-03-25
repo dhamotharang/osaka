@@ -2,7 +2,7 @@
 using HappyTravel.EdoContracts.GeoData.Enums;
 using Nest;
 
-namespace HappyTravel.PredictionService.Models.Elasticsearch
+namespace HappyTravel.Osaka.Api.Models.Elasticsearch
 {
     public class Location
     {

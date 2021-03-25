@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.PredictionService.Infrastructure.Logging
+namespace HappyTravel.Osaka.Api.Infrastructure.Logging
 {
     public static class LoggerExtensions
     {

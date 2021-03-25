@@ -5,7 +5,7 @@ using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class TracingServiceCollectionExtensions
     {

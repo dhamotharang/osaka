@@ -2,11 +2,11 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using HappyTravel.PredictionService.Models.Response;
-using HappyTravel.PredictionService.Services;
+using HappyTravel.Osaka.Api.Models.Response;
+using HappyTravel.Osaka.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.PredictionService.Controllers
+namespace HappyTravel.Osaka.Api.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]

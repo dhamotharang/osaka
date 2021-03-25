@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace HappyTravel.PredictionService.Filters
+namespace HappyTravel.Osaka.Api.Filters
 {
     public class ModelValidationFilter : IActionFilter
     {

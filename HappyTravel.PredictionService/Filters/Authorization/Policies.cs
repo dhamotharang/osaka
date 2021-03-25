@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.PredictionService.Filters.Authorization
+﻿namespace HappyTravel.Osaka.Api.Filters.Authorization
 {
     public static class Policies
     {

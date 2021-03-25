@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.PredictionService.Infrastructure
+﻿namespace HappyTravel.Osaka.Api.Infrastructure
 {
     public static class HttpClientNames
     {

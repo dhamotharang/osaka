@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HappyTravel.PredictionService", "HappyTravel.PredictionService\HappyTravel.PredictionService.csproj", "{625CC398-AC50-4968-B3E1-E7FD12EBD330}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTravel.Osaka.Api", "HappyTravel.PredictionService\HappyTravel.Osaka.Api.csproj", "{625CC398-AC50-4968-B3E1-E7FD12EBD330}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +15,11 @@ Global
 		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27498A25-8E30-4DA8-AC2C-12C71060F969}
 	EndGlobalSection
 EndGlobal

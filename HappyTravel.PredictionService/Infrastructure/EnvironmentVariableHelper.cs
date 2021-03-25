@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace HappyTravel.PredictionService.Infrastructure
+namespace HappyTravel.Osaka.Api.Infrastructure
 {
     public static class EnvironmentVariableHelper
     {

@@ -2,14 +2,14 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using HappyTravel.PredictionService.Filters.Authorization;
-using HappyTravel.PredictionService.Services.Locations;
+using HappyTravel.Osaka.Api.Filters.Authorization;
+using HappyTravel.Osaka.Api.Services.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Sentry;
 
-namespace HappyTravel.PredictionService.Controllers
+namespace HappyTravel.Osaka.Api.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]

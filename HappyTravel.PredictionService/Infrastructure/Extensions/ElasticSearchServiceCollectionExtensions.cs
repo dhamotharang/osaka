@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class ElasticSearchServiceCollectionExtensions
     {

@@ -1,11 +1,11 @@
-using HappyTravel.PredictionService.Infrastructure;
+using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.StdOutLogger.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.PredictionService
+namespace HappyTravel.Osaka.Api
 {
     public static class Program
     {

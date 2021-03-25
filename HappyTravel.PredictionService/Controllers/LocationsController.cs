@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.PredictionService.Services.Locations;
+using HappyTravel.Osaka.Api.Services.Locations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.PredictionService.Controllers
+namespace HappyTravel.Osaka.Api.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]

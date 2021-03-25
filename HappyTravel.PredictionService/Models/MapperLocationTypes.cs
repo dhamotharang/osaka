@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.PredictionService.Models
+﻿namespace HappyTravel.Osaka.Api.Models
 {
     public enum MapperLocationTypes
     {

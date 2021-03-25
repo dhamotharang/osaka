@@ -1,5 +1,5 @@
 ﻿
-namespace HappyTravel.PredictionService.Models.Response
+namespace HappyTravel.Osaka.Api.Models.Response
 {
     public readonly struct Prediction
     {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
-namespace HappyTravel.PredictionService.Filters.Authorization
+namespace HappyTravel.Osaka.Api.Filters.Authorization
 {
     public class OnlyManagerClientRequirement : AuthorizationHandler<OnlyManagerClientRequirement>, IAuthorizationRequirement
     {

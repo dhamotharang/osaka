@@ -6,14 +6,14 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using HappyTravel.ErrorHandling.Extensions;
-using HappyTravel.PredictionService.Conventions;
-using HappyTravel.PredictionService.Filters;
-using HappyTravel.PredictionService.Filters.Authorization;
-using HappyTravel.PredictionService.Infrastructure;
-using HappyTravel.PredictionService.Infrastructure.Extensions;
-using HappyTravel.PredictionService.Options;
-using HappyTravel.PredictionService.Services;
-using HappyTravel.PredictionService.Services.Locations;
+using HappyTravel.Osaka.Api.Conventions;
+using HappyTravel.Osaka.Api.Filters;
+using HappyTravel.Osaka.Api.Filters.Authorization;
+using HappyTravel.Osaka.Api.Infrastructure;
+using HappyTravel.Osaka.Api.Infrastructure.Extensions;
+using HappyTravel.Osaka.Api.Options;
+using HappyTravel.Osaka.Api.Services;
+using HappyTravel.Osaka.Api.Services.Locations;
 using HappyTravel.StdOutLogger.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
-namespace HappyTravel.PredictionService
+namespace HappyTravel.Osaka.Api
 {
     public class Startup
     {

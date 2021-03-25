@@ -6,15 +6,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.PredictionService.Infrastructure;
-using HappyTravel.PredictionService.Models;
+using HappyTravel.Osaka.Api.Infrastructure;
+using HappyTravel.Osaka.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace HappyTravel.PredictionService.Services.HttpClients
+namespace HappyTravel.Osaka.Api.Services.HttpClients
 {
     public class MapperHttpClient : IMapperHttpClient
     {

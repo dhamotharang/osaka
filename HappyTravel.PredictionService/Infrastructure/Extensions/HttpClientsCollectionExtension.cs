@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net.Http;
-using HappyTravel.PredictionService.Services.HttpClients;
+using HappyTravel.Osaka.Api.Services.HttpClients;
 using HappyTravel.VaultClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
 
-namespace HappyTravel.PredictionService.Infrastructure.Extensions
+namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class HttpClientsCollectionExtension
     {

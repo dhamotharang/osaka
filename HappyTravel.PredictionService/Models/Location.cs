@@ -1,7 +1,7 @@
 ﻿using HappyTravel.EdoContracts.GeoData.Enums;
 using HappyTravel.Geography;
 
-namespace HappyTravel.PredictionService.Models
+namespace HappyTravel.Osaka.Api.Models
 {
     public class Location
     {

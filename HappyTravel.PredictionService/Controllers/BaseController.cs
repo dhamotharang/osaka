@@ -2,7 +2,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.PredictionService.Controllers
+namespace HappyTravel.Osaka.Api.Controllers
 {
     public class BaseController : ControllerBase
     {

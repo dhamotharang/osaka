@@ -4,7 +4,7 @@ using HappyTravel.VaultClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.PredictionService.Infrastructure
+namespace HappyTravel.Osaka.Api.Infrastructure
 {
     public static class VaultHelper
     {

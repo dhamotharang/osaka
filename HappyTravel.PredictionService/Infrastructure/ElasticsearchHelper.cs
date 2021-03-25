@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using HappyTravel.MultiLanguage;
 
-namespace HappyTravel.PredictionService.Infrastructure
+namespace HappyTravel.Osaka.Api.Infrastructure
 {
     public static class ElasticsearchHelper
     {
