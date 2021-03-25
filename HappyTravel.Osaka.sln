@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTravel.Osaka.Api", "HappyTravel.PredictionService\HappyTravel.Osaka.Api.csproj", "{625CC398-AC50-4968-B3E1-E7FD12EBD330}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTravel.Osaka.Api", "HappyTravel.Osaka.Api\HappyTravel.Osaka.Api.csproj", "{E4213974-785A-44EC-8E03-BB149AF8F46D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{625CC398-AC50-4968-B3E1-E7FD12EBD330}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4213974-785A-44EC-8E03-BB149AF8F46D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4213974-785A-44EC-8E03-BB149AF8F46D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4213974-785A-44EC-8E03-BB149AF8F46D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4213974-785A-44EC-8E03-BB149AF8F46D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
