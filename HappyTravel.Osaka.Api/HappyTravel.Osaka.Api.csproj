@@ -30,10 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="HappyTravel.LocationService.xml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="HappyTravel.PredictionService.xml">
+      <None Update="HappyTravel.Osaka.Api.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
