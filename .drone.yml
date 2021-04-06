@@ -80,9 +80,9 @@ steps:
   image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
-    chart: ./Helm_v3/osaka
+    chart: ./Helm/osaka
     release: osaka-dev
-    values_files: ["Helm_v3/osaka/values_dev.yaml"]
+    values_files: ["Helm/osaka/values_dev.yaml"]
     namespace: dev
     skip_tls_verify: true
     wait_for_upgrade: true
@@ -149,9 +149,9 @@ steps:
   image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
-    chart: ./Helm_v3/osaka
+    chart: ./Helm/osaka
     release: osaka-production
-    values_files: ["Helm_v3/osaka/values_prod.yaml"]
+    values_files: ["Helm/osaka/values_prod.yaml"]
     namespace: production
     skip_tls_verify: true
     wait_for_upgrade: true
