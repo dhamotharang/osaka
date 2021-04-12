@@ -59,9 +59,11 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                     .Settings(settings => settings.Analysis(analysis =>
                         analysis.TokenFilters(filter =>
                                 filter.SynonymGraph("synonyms_filter", synonymsFilter => synonymsFilter.Tokenizer("standard").Lenient(false).Synonyms(synonyms))
-                                    .Stop("stopwords_filter", stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase()))
-                            .Analyzers(analyzer => analyzer.Custom("predictions_analyzer",
-                                predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard")))))
+                                    .Stop("stopwords_filter", stopWordsFilter => stopWordsFilter.StopWords(StopWords).IgnoreCase())
+                                    .EdgeNGram("edge_ngram_filter", edgeNGramFilter => edgeNGramFilter.MinGram(1).MaxGram(20)))
+                            .Analyzers(analyzer 
+                                => analyzer.Custom("predictions_analyzer", predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard"))
+                                    .Custom("full_text_analyzer", ngramAnalyzer => ngramAnalyzer.Filters("lowercase", "edge_ngram_filter", "asciifolding").Tokenizer("standard")))))
                     .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
                             properties.Keyword(property => property.Name(prediction => prediction.Id))
                                 .Keyword(completion => completion.Name(location => location.Country))
@@ -77,10 +79,12 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                                         context.Category(category => category.Name("type").Path(location => location.LocationType))
                                             .Category(category => category.Name("country").Path(location => location.Country))
                                             .Category(category => category.Name("locality").Path(location => location.Locality))))
+                                .Text(property => property.Name(prediction => prediction.PredictionText)
+                                    .Analyzer("full_text_analyzer")
+                                    .SearchAnalyzer("standard"))
                                 .Keyword(property => property.Name(prediction => prediction.CountryCode))
                                 .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
-                                .Number(property =>
-                                    property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
+                                .Number(property => property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
                                 .Keyword(property => property.Name(prediction => prediction.LocationType)))
                         .AutoMap()));
         }

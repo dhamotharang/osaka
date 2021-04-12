@@ -34,27 +34,22 @@ namespace HappyTravel.Osaka.Api.Controllers
             if (_locationsUploadTokenSource.Token.CanBeCanceled)
                 _locationsUploadTokenSource.Cancel();
 
-            _locationsUploadTokenSource = new CancellationTokenSource(TimeSpan.FromHours(8));
+            _locationsUploadTokenSource = new CancellationTokenSource(TimeSpan.FromHours(4));
 
             Task.Run(async () =>
             {
                 using var scope = _serviceProvider.CreateScope();
-
                 var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
                 await locationsManagementService.ReUpload(_locationsUploadTokenSource.Token);
-            }, _locationsUploadTokenSource.Token).ContinueWith(t =>
-            {
-                if (t.Exception is not null)
-                {
-                    SentrySdk.CaptureException(t.Exception);
-                }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            }, _locationsUploadTokenSource.Token);
+            // Wait for the task run
+            Task.Delay(1000);
             
             return Accepted();
         }
 
         
         private readonly IServiceProvider _serviceProvider;
-        private static CancellationTokenSource _locationsUploadTokenSource = new (TimeSpan.FromHours(8));
+        private static CancellationTokenSource _locationsUploadTokenSource = new (TimeSpan.FromHours(4));
     }
 }

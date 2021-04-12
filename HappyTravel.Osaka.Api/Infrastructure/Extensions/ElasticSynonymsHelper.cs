@@ -10,14 +10,14 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
             var locationNameRetriever = new LocationNameNormalizer.FileLocationNameRetriever();
             var countries = locationNameRetriever.RetrieveCountries();
             
-            var countrySynonyms = countries.Select(c => FilterSynonyms(c.Names))
+            var countrySynonyms = countries.Select(c => FilterSynonyms(c.Name.Variants))
                 .Where(IsNotOneWordList)
                 .Select(CreateSynonym);
 
             var localitySynonyms = countries
                 .Where(c => c.Localities != null)
                 .SelectMany(c => c.Localities)
-                .Select(l => FilterSynonyms(l.Names))
+                .Select(l => FilterSynonyms(l.Name.Variants))
                 .Where(IsNotOneWordList)
                 .Select(CreateSynonym);
 
