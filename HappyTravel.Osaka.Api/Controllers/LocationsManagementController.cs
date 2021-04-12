@@ -42,7 +42,7 @@ namespace HappyTravel.Osaka.Api.Controllers
                 var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
                 await locationsManagementService.ReUpload(_locationsUploadTokenSource.Token);
             }, _locationsUploadTokenSource.Token);
-            //Wait for a task run
+            // Wait for the task run
             Task.Delay(1000);
             
             return Accepted();
