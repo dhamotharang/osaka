@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -71,7 +72,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                     if (!locations.Any())
                         continue;
                     
-                    var (_, uploadFailure, uploadError) = await UploadToElasticsearch(index, locations, cancellationToken);
+                    var (_, uploadFailure, uploadError) = await Add(locations, index, cancellationToken);
                     if (uploadFailure)
                     {
                         _logger.LogUploadingError(uploadError);
@@ -89,6 +90,99 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             return Result.Success(locationsUploaded);
         }
 
+        
+        public async Task<Result> Add(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.BulkAsync(b 
+                => b.IndexMany(Build(locations), (bi, l) 
+                    => bi.Index(index).Document(l)), cancellationToken);
+
+            var ur = await Remove(locations, index, cancellationToken);
+            
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+
+      
+        public async Task<Result> Update(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient
+                .BulkAsync(b 
+                    => b.Index(index)
+                        .UpdateMany(Build(locations), (bd, l) 
+                            => bd.Id(l.HtId).Doc(l)), cancellationToken);
+            
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+        
+        
+        public async Task<Result> Remove(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.BulkAsync(b => b.Index(index).DeleteMany(Build(locations), (bd, l) => bd.Document(l)), cancellationToken);
+            
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+        
+        
+        public async Task<Result> Add(Location location, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.IndexDocumentAsync(Build(location), cancellationToken);
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+            
+            return Result.Success();
+        }
+
+        
+        public async Task<Result> Update(Location location, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.UpdateAsync<Location, object>(DocumentPath<Location>.Id(location.HtId), u 
+                => u.Index(index).Doc(Build(location)), cancellationToken);
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+            
+            return Result.Success();
+        }
+        
+        
+        public async Task<Result> Remove(Location location, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.DeleteAsync(new DeleteRequest(index, location.HtId), cancellationToken);
+            if (!response.IsValid)
+                return Result.Failure(response.ApiCall?.DebugInformation);
+            
+            return Result.Success();
+        }
+
+        
+        private void LogErrorsIfNeeded(BulkResponse response)
+        {
+            if (response.Errors)
+            {
+                var sb = new StringBuilder();
+                foreach (var itemWithError in response.ItemsWithErrors)
+                {
+                    sb.AppendLine($"Failed to index location {itemWithError.Id}: {itemWithError.Error}");
+                }
+                
+                _logger.LogUploadingError($"{sb} {nameof(response.DebugInformation)}: {response.DebugInformation}");
+            }
+        }
+        
         
         private async IAsyncEnumerable<Result<List<Location>>> GetFromMapper(MapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -109,19 +203,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             } while (locations.Count == batchSize);
         }
         
-
-        private async Task<Result> UploadToElasticsearch(string index, List<Location> locations, CancellationToken cancellationToken = default)
-        {
-            var elasticsearchLocations = Build(locations);
-            
-            var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
-            
-            return !response.IsValid 
-                ? Result.Failure($"{response} {response.ApiCall?.DebugInformation}") 
-                : Result.Success();
-        }
-        
-        
+       
         private async Task<Result> ReCreateIndex(string index, CancellationToken cancellationToken = default)
         {
             await _elasticClient.Indices.DeleteAsync(index, ct: cancellationToken);
