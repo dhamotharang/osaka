@@ -67,7 +67,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                         return Result.Failure<int>(error);
                     }
 
-                    _logger.LogLocationsReceivedFromMapper($"'{locations.Count}' locations received from the mapper ");
+                    _logger.LogGetLocationsFromMapper($"'{locations.Count}' locations received from the mapper");
                     
                     if (!locations.Any())
                         continue;
@@ -80,8 +80,6 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                     }
                     
                     locationsUploaded += locations.Count;
-
-                    _logger.LogLocationsUploadedToIndex($"'{locationsUploaded}' locations uploaded to the the Elasticsearch index '{index}'");
                 }
             }
 
@@ -93,11 +91,10 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         public async Task<Result> Add(List<Location> locations, string index, CancellationToken cancellationToken = default)
         {
-            var response = await _elasticClient.BulkAsync(b 
-                => b.IndexMany(Build(locations), (bi, l) 
-                    => bi.Index(index).Document(l)), cancellationToken);
-
-            var ur = await Remove(locations, index, cancellationToken);
+            var response = await _elasticClient.BulkAsync(b
+                => b.IndexMany(Build(locations)), cancellationToken);
+            
+            _logger.LogAddLocations($"'{locations.Count}' locations have been added to the index '{index}'");
             
             if (!response.IsValid)
                 return Result.Failure(response.ApiCall?.DebugInformation);
@@ -116,6 +113,8 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                         .UpdateMany(Build(locations), (bd, l) 
                             => bd.Id(l.HtId).Doc(l)), cancellationToken);
             
+            _logger.LogUpdateLocations($"'{locations.Count}' locations have been updated in the index '{index}'");
+            
             if (!response.IsValid)
                 return Result.Failure(response.ApiCall?.DebugInformation);
 
@@ -127,7 +126,12 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         public async Task<Result> Remove(List<Location> locations, string index, CancellationToken cancellationToken = default)
         {
-            var response = await _elasticClient.BulkAsync(b => b.Index(index).DeleteMany(Build(locations), (bd, l) => bd.Document(l)), cancellationToken);
+            var response = await _elasticClient.BulkAsync(b 
+                => b.Index(index)
+                    .DeleteMany(Build(locations), (bd, l) 
+                        => bd.Document(l)), cancellationToken);
+            
+            _logger.LogUpdateLocations($"'{locations.Count}' locations have been removed from the index '{index}'");
             
             if (!response.IsValid)
                 return Result.Failure(response.ApiCall?.DebugInformation);

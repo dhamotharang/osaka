@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -31,7 +30,7 @@ namespace HappyTravel.Osaka.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostEnvironment hostEnvironment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostEnvironment)
         {
             _configuration = configuration;
             _hostEnvironment = hostEnvironment;
@@ -58,8 +57,7 @@ namespace HappyTravel.Osaka.Api
                     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                     options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals |
                                                                    JsonNumberHandling.AllowReadingFromString;
-                    options.JsonSerializerOptions.Converters.Add(
-                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
                     options.JsonSerializerOptions.Converters.Add(new NetTopologySuite.IO.Converters.GeoJsonConverterFactory());
                 });
             
@@ -146,11 +144,13 @@ namespace HappyTravel.Osaka.Api
             });
             services.Configure<IndexOptions>(o => o.Indexes = locationIndexes);
 
-            services.AddHealthChecks()
-                .AddCheck<ElasticSearchHealthCheck>("ElasticSearch");
+            services.AddHealthChecks().AddCheck<ElasticSearchHealthCheck>("ElasticSearch");
+            
+            var redisEndpoint = _configuration[_configuration["Redis:Endpoint"]];
+            
+            services.AddPredictionsUpdate(_configuration, _hostEnvironment);
         }
 
-        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<RequestLocalizationOptions> localizationOptions)
         {
             var logger = loggerFactory.CreateLogger<Startup>();
@@ -185,6 +185,6 @@ namespace HappyTravel.Osaka.Api
 
        
         private readonly IConfiguration _configuration;
-        private readonly IHostEnvironment _hostEnvironment;
+        private readonly IWebHostEnvironment _hostEnvironment;
     }
 }

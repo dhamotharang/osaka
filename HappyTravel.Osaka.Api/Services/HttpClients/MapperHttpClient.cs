@@ -24,9 +24,12 @@ namespace HappyTravel.Osaka.Api.Services.HttpClients
             _httpClient = httpClientFactory.CreateClient(HttpClientNames.MapperApi);
 
             if (_httpClient.DefaultRequestHeaders.Contains(HeaderNames.Authorization)) return;
-            
-            var authToken = httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
-            _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
+
+            if (httpContextAccessor.HttpContext != null)
+            {
+                var authToken = httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
+                _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
+            }
         }
 
 

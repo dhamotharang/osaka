@@ -1,9 +1,11 @@
 [
     {"id": 2001, "name": "StartUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
     {"id": 2002, "name": "RemoveLocationsFromIndex", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2003, "name": "LocationsReceivedFromMapper", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2004, "name": "LocationsUploadedToIndex", "level": "Information", "source": "LocationsManagementService", "isException": false}, 
-    {"id": 2005, "name": "CompleteUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2006, "name": "UploadingError", "level": "Critical", "source": "LocationsManagementService", "isException": false},
-    {"id": 2007, "name": "PredictionsQuery", "level": "Information", "source": "LocationsService", "isException": false}
+    {"id": 2003, "name": "GetLocationsFromMapper", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 2004, "name": "CompleteUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 2005, "name": "UploadingError", "level": "Critical", "source": "LocationsManagementService", "isException": false},
+    {"id": 2006, "name": "PredictionsQuery", "level": "Information", "source": "LocationsService", "isException": false},
+    {"id": 2007, "name": "AddLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 2008, "name": "UpdateLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
+    {"id": 2009, "name": "RemoveLocations", "level": "Information", "source": "LocationsManagementService", "isException": false}
 ]
