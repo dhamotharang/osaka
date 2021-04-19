@@ -2,7 +2,7 @@
 {
     public class LocationEntry
     {
-        public EntryTypes EntryType { get; init; }
+        public EventTypes EventType { get; init; }
         public Location Location { get; init; }
     }
 }

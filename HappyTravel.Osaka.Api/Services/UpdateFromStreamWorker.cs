@@ -84,24 +84,24 @@ namespace HappyTravel.Osaka.Api.Services
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         
         
-        private Dictionary<EntryTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
+        private Dictionary<EventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
         {
-            var locations = new Dictionary<EntryTypes, List<Location>>();
+            var locations = new Dictionary<EventTypes, List<Location>>();
 
             foreach (var nameValueEntry in streamEntry.Values)
             {
                 var entry = JsonSerializer.Deserialize<LocationEntry>(nameValueEntry.Value);
 
-                if (!locations.ContainsKey(entry!.EntryType)) locations[entry.EntryType] = new List<Location>();
+                if (!locations.ContainsKey(entry!.EventType)) locations[entry.EventType] = new List<Location>();
 
-                locations[entry.EntryType].Add(entry.Location);
+                locations[entry.EventType].Add(entry.Location);
             }
 
             return locations;
         }
         
 
-        private async Task UpdateIndex(Dictionary<EntryTypes, List<Location>> locations, CancellationToken cancellationToken)
+        private async Task UpdateIndex(Dictionary<EventTypes, List<Location>> locations, CancellationToken cancellationToken)
         {
             foreach (var locationKeyValue in locations)
             {
@@ -110,14 +110,14 @@ namespace HappyTravel.Osaka.Api.Services
         }
 
 
-        private Task UpdateIndex(EntryTypes entryType, List<Location> locations, CancellationToken cancellationToken)
+        private Task UpdateIndex(EventTypes eventType, List<Location> locations, CancellationToken cancellationToken)
         {
-            return entryType switch
+            return eventType switch
             {
-                EntryTypes.Add => _locationsManagementService.Add(locations, _index, cancellationToken),
-                EntryTypes.Remove => _locationsManagementService.Remove(locations, _index, cancellationToken),
-                EntryTypes.Update => _locationsManagementService.Update(locations, _index, cancellationToken),
-                _ => throw new ArgumentOutOfRangeException(nameof(entryType), entryType, null)
+                EventTypes.AddEvent => _locationsManagementService.Add(locations, _index, cancellationToken),
+                EventTypes.RemoveEvent => _locationsManagementService.Remove(locations, _index, cancellationToken),
+                EventTypes.UpdateEvent => _locationsManagementService.Update(locations, _index, cancellationToken),
+                _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null)
             };
         }
 
