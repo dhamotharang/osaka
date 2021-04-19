@@ -114,9 +114,9 @@ namespace HappyTravel.Osaka.Api.Services
         {
             return eventType switch
             {
-                EventTypes.AddEvent => _locationsManagementService.Add(locations, _index, cancellationToken),
-                EventTypes.RemoveEvent => _locationsManagementService.Remove(locations, _index, cancellationToken),
-                EventTypes.UpdateEvent => _locationsManagementService.Update(locations, _index, cancellationToken),
+                EventTypes.Add => _locationsManagementService.Add(locations, _index, cancellationToken),
+                EventTypes.Remove => _locationsManagementService.Remove(locations, _index, cancellationToken),
+                EventTypes.Update => _locationsManagementService.Update(locations, _index, cancellationToken),
                 _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null)
             };
         }
