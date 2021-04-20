@@ -146,11 +146,10 @@ namespace HappyTravel.Osaka.Api
 
             services.AddHealthChecks().AddCheck<ElasticSearchHealthCheck>("ElasticSearch");
             
-            var redisEndpoint = _configuration[_configuration["Redis:Endpoint"]];
-            
-            services.AddPredictionsUpdate(_configuration, _hostEnvironment);
+            services.AddPredictionsUpdate(vaultClient, _configuration, _hostEnvironment);
         }
 
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory, IOptions<RequestLocalizationOptions> localizationOptions)
         {
             var logger = loggerFactory.CreateLogger<Startup>();
