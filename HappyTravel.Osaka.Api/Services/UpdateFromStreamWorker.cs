@@ -74,34 +74,34 @@ namespace HappyTravel.Osaka.Api.Services
             }
             
             
-            Task<StackExchange.Redis.StreamEntry[]> GetEntries() => database!.StreamReadAsync(_updateOptions.Stream, "0-0", batchSize);
+            Task<StackExchange.Redis.StreamEntry[]> GetEntries() => database!.StreamReadAsync(_updateOptions.StreamName, "0-0", batchSize);
             
             
-            Task DeleteEntries(StackExchange.Redis.StreamEntry[] entries) => database!.StreamDeleteAsync(_updateOptions.Stream, entries.Select(e=> e.Id).ToArray());
+            Task DeleteEntries(StackExchange.Redis.StreamEntry[] entries) => database!.StreamDeleteAsync(_updateOptions.StreamName, entries.Select(e=> e.Id).ToArray());
         }
 
         
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         
         
-        private Dictionary<EventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
+        private Dictionary<UpdateEventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
         {
-            var locations = new Dictionary<EventTypes, List<Location>>();
+            var locations = new Dictionary<UpdateEventTypes, List<Location>>();
 
             foreach (var nameValueEntry in streamEntry.Values)
             {
                 var entry = JsonSerializer.Deserialize<LocationEntry>(nameValueEntry.Value);
 
-                if (!locations.ContainsKey(entry!.EventType)) locations[entry.EventType] = new List<Location>();
+                if (!locations.ContainsKey(entry!.UpdateEventType)) locations[entry.UpdateEventType] = new List<Location>();
 
-                locations[entry.EventType].Add(entry.Location);
+                locations[entry.UpdateEventType].Add(entry.Location);
             }
 
             return locations;
         }
         
 
-        private async Task UpdateIndex(Dictionary<EventTypes, List<Location>> locations, CancellationToken cancellationToken)
+        private async Task UpdateIndex(Dictionary<UpdateEventTypes, List<Location>> locations, CancellationToken cancellationToken)
         {
             foreach (var locationKeyValue in locations)
             {
@@ -110,14 +110,14 @@ namespace HappyTravel.Osaka.Api.Services
         }
 
 
-        private Task UpdateIndex(EventTypes eventType, List<Location> locations, CancellationToken cancellationToken)
+        private Task UpdateIndex(UpdateEventTypes updateEventType, List<Location> locations, CancellationToken cancellationToken)
         {
-            return eventType switch
+            return updateEventType switch
             {
-                EventTypes.Add => _locationsManagementService.Add(locations, _index, cancellationToken),
-                EventTypes.Remove => _locationsManagementService.Remove(locations, _index, cancellationToken),
-                EventTypes.Update => _locationsManagementService.Update(locations, _index, cancellationToken),
-                _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null)
+                UpdateEventTypes.Add => _locationsManagementService.Add(locations, _index, cancellationToken),
+                UpdateEventTypes.Remove => _locationsManagementService.Remove(locations, _index, cancellationToken),
+                UpdateEventTypes.Update => _locationsManagementService.Update(locations, _index, cancellationToken),
+                _ => throw new ArgumentOutOfRangeException(nameof(updateEventType), updateEventType, null)
             };
         }
 
