@@ -89,7 +89,6 @@ namespace HappyTravel.Osaka.Api.Services
         }
         
         
-        
         private Dictionary<UpdateEventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
         {
             var locations = new Dictionary<UpdateEventTypes, List<Location>>();

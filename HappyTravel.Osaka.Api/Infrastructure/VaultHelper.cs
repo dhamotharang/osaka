@@ -11,19 +11,11 @@ namespace HappyTravel.Osaka.Api.Infrastructure
     {
         public static VaultClient.VaultClient CreateVaultClient(IConfiguration configuration, ILoggerFactory loggerFactory = null!)
         {
-            var role = configuration["Vault:Role"];
-
-            return CreateVaultClient(configuration, role, loggerFactory);
-        }
-        
-        
-        public static VaultClient.VaultClient CreateVaultClient(IConfiguration configuration, string role, ILoggerFactory loggerFactory = null!)
-        {
             var vaultOptions = new VaultOptions
             {
                 BaseUrl = new Uri(configuration[configuration["Vault:Endpoint"]]),
                 Engine = configuration["Vault:Engine"],
-                Role = role
+                Role = configuration["Vault:Role"]
             };
 
             return new VaultClient.VaultClient(vaultOptions, loggerFactory);
