@@ -20,16 +20,13 @@ namespace HappyTravel.Osaka.Api.Services
 {
     public class UpdateFromStreamWorker : IHostedService
     {
-        public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, ILocationsManagementService locationsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
+        public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, IPredictionsManagementService predictionsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
         {
             _updateOptions = updateOptions.Value;
             _redisCacheClient = redisCacheClient;
-            _locationsManagementService = locationsManagementService;
+            _predictionsManagementService = predictionsManagementService;
             _logger = logger;
-            const string enLanguage = "en";
-            
-            if (!ElasticsearchHelper.TryGetIndex(indexOptions.Value.Indexes!, enLanguage, out _index))
-                throw new ArgumentException($"Failed to get an index name by the language code '{enLanguage}");
+            Init(indexOptions.Value, out _index);
         }
         
         
@@ -43,11 +40,7 @@ namespace HappyTravel.Osaka.Api.Services
                 try
                 {
                     var entries = await GetEntries();
-                    if (!entries.Any())
-                    {
-                        await Task.Delay(1000, cancellationToken);
-                    }
-                    else
+                    if (entries.Any())
                     {
                         while (entries.Any())
                         {
@@ -59,6 +52,10 @@ namespace HappyTravel.Osaka.Api.Services
                             await DeleteEntries(entries);
                             entries = await GetEntries();
                         }
+                    }
+                    else
+                    {
+                        await Task.Delay(1000, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -82,6 +79,15 @@ namespace HappyTravel.Osaka.Api.Services
 
         
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+
+        private void Init(IndexOptions indexOptions, out string index)
+        {
+            const string enLanguage = "en";
+            if (!ElasticsearchHelper.TryGetIndex(indexOptions.Indexes!, enLanguage, out index))
+                throw new ArgumentException($"Failed to get an index name by the language code '{enLanguage}");
+        }
+        
         
         
         private Dictionary<UpdateEventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
@@ -104,9 +110,7 @@ namespace HappyTravel.Osaka.Api.Services
         private async Task UpdateIndex(Dictionary<UpdateEventTypes, List<Location>> locations, CancellationToken cancellationToken)
         {
             foreach (var locationKeyValue in locations)
-            {
                 await UpdateIndex(locationKeyValue.Key, locationKeyValue.Value, cancellationToken);
-            }
         }
 
 
@@ -114,9 +118,9 @@ namespace HappyTravel.Osaka.Api.Services
         {
             return updateEventType switch
             {
-                UpdateEventTypes.Add => _locationsManagementService.Add(locations, _index, cancellationToken),
-                UpdateEventTypes.Remove => _locationsManagementService.Remove(locations, _index, cancellationToken),
-                UpdateEventTypes.Update => _locationsManagementService.Update(locations, _index, cancellationToken),
+                UpdateEventTypes.Add => _predictionsManagementService.Add(locations, _index, cancellationToken),
+                UpdateEventTypes.Remove => _predictionsManagementService.Remove(locations, _index, cancellationToken),
+                UpdateEventTypes.Update => _predictionsManagementService.Update(locations, _index, cancellationToken),
                 _ => throw new ArgumentOutOfRangeException(nameof(updateEventType), updateEventType, null)
             };
         }
@@ -126,6 +130,6 @@ namespace HappyTravel.Osaka.Api.Services
         private readonly ILogger<UpdateFromStreamWorker> _logger;
         private readonly PredictionUpdateOptions _updateOptions;
         private readonly IRedisCacheClient _redisCacheClient;
-        private readonly ILocationsManagementService _locationsManagementService;
+        private readonly IPredictionsManagementService _predictionsManagementService;
     }
 }

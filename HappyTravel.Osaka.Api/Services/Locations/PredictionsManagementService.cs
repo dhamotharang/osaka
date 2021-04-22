@@ -22,9 +22,9 @@ using Result = CSharpFunctionalExtensions.Result;
 
 namespace HappyTravel.Osaka.Api.Services.Locations
 {
-    public class LocationsManagementService : ILocationsManagementService
+    public class PredictionsManagementService : IPredictionsManagementService
     {
-        public LocationsManagementService(IElasticClient elasticClient, IMapperHttpClient mapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<LocationsManagementService> logger)
+        public PredictionsManagementService(IElasticClient elasticClient, IMapperHttpClient mapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<PredictionsManagementService> logger)
         {
             _elasticClient = elasticClient;
             _logger = logger;
@@ -95,10 +95,10 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                 => b.IndexMany(Build(locations)), cancellationToken);
             
             _logger.LogAddLocations($"'{locations.Count}' locations have been added to the index '{index}'");
-            
-            if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
 
+            if (!response.IsValid)
+                return Result.Failure(response.DebugInformation);
+            
             LogErrorsIfNeeded(response);
               
             return Result.Success();
@@ -116,7 +116,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             _logger.LogUpdateLocations($"'{locations.Count}' locations have been updated in the index '{index}'");
             
             if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
+                return Result.Failure(response.DebugInformation);
 
             LogErrorsIfNeeded(response);
               
@@ -134,7 +134,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             _logger.LogUpdateLocations($"'{locations.Count}' locations have been removed from the index '{index}'");
             
             if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
+                return Result.Failure(response.DebugInformation);
 
             LogErrorsIfNeeded(response);
               
@@ -142,49 +142,17 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
         
         
-        public async Task<Result> Add(Location location, CancellationToken cancellationToken = default)
-        {
-            var response = await _elasticClient.IndexDocumentAsync(Build(location), cancellationToken);
-            if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
-            
-            return Result.Success();
-        }
-
-        
-        public async Task<Result> Update(Location location, string index, CancellationToken cancellationToken = default)
-        {
-            var response = await _elasticClient.UpdateAsync<Location, object>(DocumentPath<Location>.Id(location.HtId), u 
-                => u.Index(index).Doc(Build(location)), cancellationToken);
-            if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
-            
-            return Result.Success();
-        }
-        
-        
-        public async Task<Result> Remove(Location location, string index, CancellationToken cancellationToken = default)
-        {
-            var response = await _elasticClient.DeleteAsync(new DeleteRequest(index, location.HtId), cancellationToken);
-            if (!response.IsValid)
-                return Result.Failure(response.ApiCall?.DebugInformation);
-            
-            return Result.Success();
-        }
-
-        
         private void LogErrorsIfNeeded(BulkResponse response)
         {
-            if (response.Errors)
+            if (!response.Errors) return;
+            
+            var sb = new StringBuilder();
+            foreach (var itemWithError in response.ItemsWithErrors)
             {
-                var sb = new StringBuilder();
-                foreach (var itemWithError in response.ItemsWithErrors)
-                {
-                    sb.AppendLine($"Failed to index location {itemWithError.Id}: {itemWithError.Error}");
-                }
-                
-                _logger.LogUploadingError($"{sb} {nameof(response.DebugInformation)}: {response.DebugInformation}");
+                sb.AppendLine($"Failed to index location {itemWithError.Id}: {itemWithError.Error}");
             }
+                
+            _logger.LogUploadingError($"{sb} {nameof(response.DebugInformation)}: {response.DebugInformation}");
         }
         
         
@@ -296,6 +264,6 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         private readonly IMapperHttpClient _mapperHttpClient;
         private readonly IElasticClient _elasticClient;
         private readonly IndexOptions _indexOptions;
-        private readonly ILogger<LocationsManagementService> _logger;
+        private readonly ILogger<PredictionsManagementService> _logger;
     }
 }

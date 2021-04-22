@@ -128,7 +128,7 @@ namespace HappyTravel.Osaka.Api
             
             services.AddTransient<IPredictionsService, PredictionsService>();
             services.AddTransient<ILocationsService, LocationsService>();
-            services.AddSingleton<ILocationsManagementService, LocationsManagementService>();
+            services.AddSingleton<IPredictionsManagementService, PredictionsManagementService>();
             
             services.Configure<RequestLocalizationOptions>(options =>
             {

@@ -11,7 +11,6 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
     {
         public static IServiceCollection AddPredictionsUpdate(this IServiceCollection services, VaultClient.VaultClient vaultClient, IConfiguration configuration, IWebHostEnvironment environment)
         {
-            var redisOptions = vaultClient.Get(configuration["PredictionsUpdate:Redis"]).GetAwaiter().GetResult();
             string endpoint;
             string port;
             string streamName;
@@ -23,6 +22,7 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
             }
             else
             {
+                var redisOptions = vaultClient.Get(configuration["PredictionsUpdate:Redis"]).GetAwaiter().GetResult();
                 endpoint = redisOptions["endpoint"];
                 port = redisOptions["port"];
                 streamName = redisOptions["streamName"];
