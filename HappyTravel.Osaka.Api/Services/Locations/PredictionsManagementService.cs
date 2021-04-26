@@ -33,7 +33,8 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
 
         
-        public async Task<Result<int>> ReUpload(CancellationToken cancellationToken = default)
+        [Obsolete("Full re-upload of predictions from the mapper is deprecated")]
+        public async Task<Result<int>> ReUploadAllPredictionsFromMapper(CancellationToken cancellationToken = default)
         {
             _logger.LogStartUploadingLocations("Start locations upload");
 
@@ -144,14 +145,13 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         private void LogErrorsIfNeeded(BulkResponse response)
         {
-            if (!response.Errors) return;
+            if (!response.Errors) 
+                return;
             
             var sb = new StringBuilder();
             foreach (var itemWithError in response.ItemsWithErrors)
-            {
                 sb.AppendLine($"Failed to index location {itemWithError.Id}: {itemWithError.Error}");
-            }
-                
+            
             _logger.LogUploadingError($"{sb} {nameof(response.DebugInformation)}: {response.DebugInformation}");
         }
         
