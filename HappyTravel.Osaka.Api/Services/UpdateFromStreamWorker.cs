@@ -18,7 +18,7 @@ using StackExchange.Redis.Extensions.Core.Abstractions;
 
 namespace HappyTravel.Osaka.Api.Services
 {
-    public class UpdateFromStreamWorker : IHostedService
+    public class UpdateFromStreamWorker : BackgroundService
     {
         public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, IPredictionsManagementService predictionsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
         {
@@ -28,9 +28,9 @@ namespace HappyTravel.Osaka.Api.Services
             _logger = logger;
             Init(indexOptions.Value, out _index);
         }
-        
-        
-        public async Task StartAsync(CancellationToken cancellationToken)
+
+
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             var database = _redisCacheClient.GetDbFromConfiguration().Database;
             const int batchSize = 5;
@@ -46,7 +46,7 @@ namespace HappyTravel.Osaka.Api.Services
                         {
                             _logger.LogGetLocationsFromMapper($"'{entries.Select(e => e.Values.Length).Sum(i => i)}' locations have been got from the mapper");
 
-                            foreach (var entry in entries) 
+                            foreach (var entry in entries)
                                 await ProcessEntry(entry);
 
                             await DeleteEntries(entries);
@@ -78,9 +78,6 @@ namespace HappyTravel.Osaka.Api.Services
         }
 
         
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-
         private void Init(IndexOptions indexOptions, out string index)
         {
             const string enLanguage = "en";
@@ -97,7 +94,8 @@ namespace HappyTravel.Osaka.Api.Services
             {
                 var entry = JsonSerializer.Deserialize<LocationEntry>(nameValueEntry.Value);
 
-                if (!locations.ContainsKey(entry!.UpdateEventType)) locations[entry.UpdateEventType] = new List<Location>();
+                if (!locations.ContainsKey(entry!.UpdateEventType)) 
+                    locations[entry.UpdateEventType] = new List<Location>();
 
                 locations[entry.UpdateEventType].Add(entry.Location);
             }
