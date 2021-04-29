@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -21,9 +22,9 @@ using Result = CSharpFunctionalExtensions.Result;
 
 namespace HappyTravel.Osaka.Api.Services.Locations
 {
-    public class LocationsManagementService : ILocationsManagementService
+    public class PredictionsManagementService : IPredictionsManagementService
     {
-        public LocationsManagementService(IElasticClient elasticClient, IMapperHttpClient mapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<LocationsManagementService> logger)
+        public PredictionsManagementService(IElasticClient elasticClient, IMapperHttpClient mapperHttpClient, IOptions<IndexOptions> indexOptions, ILogger<PredictionsManagementService> logger)
         {
             _elasticClient = elasticClient;
             _logger = logger;
@@ -32,7 +33,8 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
 
         
-        public async Task<Result<int>> ReUpload(CancellationToken cancellationToken = default)
+        [Obsolete("Full re-upload of predictions from the mapper is deprecated")]
+        public async Task<Result<int>> ReuploadAllPredictionsFromMapper(CancellationToken cancellationToken = default)
         {
             _logger.LogStartUploadingLocations("Start locations upload");
 
@@ -66,12 +68,12 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                         return Result.Failure<int>(error);
                     }
 
-                    _logger.LogLocationsReceivedFromMapper($"'{locations.Count}' locations received from the mapper ");
+                    _logger.LogGetLocationsFromMapper($"'{locations.Count}' locations received from the mapper");
                     
                     if (!locations.Any())
                         continue;
                     
-                    var (_, uploadFailure, uploadError) = await UploadToElasticsearch(index, locations, cancellationToken);
+                    var (_, uploadFailure, uploadError) = await Add(locations, index, cancellationToken);
                     if (uploadFailure)
                     {
                         _logger.LogUploadingError(uploadError);
@@ -79,8 +81,6 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                     }
                     
                     locationsUploaded += locations.Count;
-
-                    _logger.LogLocationsUploadedToIndex($"'{locationsUploaded}' locations uploaded to the the Elasticsearch index '{index}'");
                 }
             }
 
@@ -89,6 +89,72 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             return Result.Success(locationsUploaded);
         }
 
+        
+        public async Task<Result> Add(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.BulkAsync(b
+                => b.IndexMany(Build(locations)), cancellationToken);
+            
+            _logger.LogAddLocations($"'{locations.Count}' locations have been added to the index '{index}'");
+
+            if (!response.IsValid)
+                return Result.Failure(response.DebugInformation);
+            
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+
+      
+        public async Task<Result> Update(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient
+                .BulkAsync(b 
+                    => b.Index(index)
+                        .UpdateMany(Build(locations), (bd, l) 
+                            => bd.Id(l.HtId).Doc(l)), cancellationToken);
+            
+            _logger.LogUpdateLocations($"'{locations.Count}' locations have been updated in the index '{index}'");
+            
+            if (!response.IsValid)
+                return Result.Failure(response.DebugInformation);
+
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+        
+        
+        public async Task<Result> Remove(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.BulkAsync(b 
+                => b.Index(index)
+                    .DeleteMany(Build(locations), (bd, l) 
+                        => bd.Document(l)), cancellationToken);
+            
+            _logger.LogUpdateLocations($"'{locations.Count}' locations have been removed from the index '{index}'");
+            
+            if (!response.IsValid)
+                return Result.Failure(response.DebugInformation);
+
+            LogErrorsIfNeeded(response);
+              
+            return Result.Success();
+        }
+        
+        
+        private void LogErrorsIfNeeded(BulkResponse response)
+        {
+            if (!response.Errors) 
+                return;
+            
+            var sb = new StringBuilder();
+            foreach (var itemWithError in response.ItemsWithErrors)
+                sb.AppendLine($"Failed to index location {itemWithError.Id}: {itemWithError.Error}");
+            
+            _logger.LogUploadingError($"{sb} {nameof(response.DebugInformation)}: {response.DebugInformation}");
+        }
+        
         
         private async IAsyncEnumerable<Result<List<Location>>> GetFromMapper(MapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -109,19 +175,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             } while (locations.Count == batchSize);
         }
         
-
-        private async Task<Result> UploadToElasticsearch(string index, List<Location> locations, CancellationToken cancellationToken = default)
-        {
-            var elasticsearchLocations = Build(locations);
-            
-            var response = await _elasticClient.IndexManyAsync(elasticsearchLocations, index, cancellationToken);
-            
-            return !response.IsValid 
-                ? Result.Failure($"{response} {response.ApiCall?.DebugInformation}") 
-                : Result.Success();
-        }
-        
-        
+       
         private async Task<Result> ReCreateIndex(string index, CancellationToken cancellationToken = default)
         {
             await _elasticClient.Indices.DeleteAsync(index, ct: cancellationToken);
@@ -210,6 +264,6 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         private readonly IMapperHttpClient _mapperHttpClient;
         private readonly IElasticClient _elasticClient;
         private readonly IndexOptions _indexOptions;
-        private readonly ILogger<LocationsManagementService> _logger;
+        private readonly ILogger<PredictionsManagementService> _logger;
     }
 }

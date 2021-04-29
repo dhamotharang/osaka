@@ -26,6 +26,8 @@
       <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc1.1" />
       <PackageReference Include="Polly" Version="7.2.1" />
       <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
+      <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+      <PackageReference Include="StackExchange.Redis.Extensions.AspNetCore" Version="6.4.5" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.2" />
     </ItemGroup>
 
@@ -33,10 +35,6 @@
       <None Update="HappyTravel.Osaka.Api.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Infrastructure\HealthChecks" />
     </ItemGroup>
 
 </Project>
