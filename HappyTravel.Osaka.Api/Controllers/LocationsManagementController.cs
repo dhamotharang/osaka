@@ -39,7 +39,7 @@ namespace HappyTravel.Osaka.Api.Controllers
             {
                 using var scope = _serviceProvider.CreateScope();
                 var locationsManagementService = scope.ServiceProvider.GetRequiredService<IPredictionsManagementService>();
-                await locationsManagementService.ReUploadAllPredictionsFromMapper(_locationsUploadTokenSource.Token);
+                await locationsManagementService.ReuploadAllPredictionsFromMapper(_locationsUploadTokenSource.Token);
             }, _locationsUploadTokenSource.Token);
             // Wait for the task run
             Task.Delay(1000);

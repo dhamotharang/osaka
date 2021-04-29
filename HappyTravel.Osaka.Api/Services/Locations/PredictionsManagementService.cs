@@ -34,7 +34,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
 
         
         [Obsolete("Full re-upload of predictions from the mapper is deprecated")]
-        public async Task<Result<int>> ReUploadAllPredictionsFromMapper(CancellationToken cancellationToken = default)
+        public async Task<Result<int>> ReuploadAllPredictionsFromMapper(CancellationToken cancellationToken = default)
         {
             _logger.LogStartUploadingLocations("Start locations upload");
 
