@@ -247,15 +247,19 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         private static string BuildPredictionText(Location location)
         {
-            var result = location.LocationType == MapperLocationTypes.Accommodation
+            var result = location.LocationType == MapperLocationTypes.Accommodation || location.LocationType == MapperLocationTypes.LocalityZone
                 ? location.Name
                 : string.Empty;
             
             if (!string.IsNullOrEmpty(location.Locality))
-                result += string.IsNullOrEmpty(result) ? location.Locality : ", " + location.Locality;
+                result += string.IsNullOrEmpty(result) 
+                    ? location.Locality
+                    : ", " + location.Locality;
                 
             if (!string.IsNullOrEmpty(location.Country))
-                result += string.IsNullOrEmpty(result)? location.Country : ", " + location.Country;
+                result += string.IsNullOrEmpty(result)
+                    ? location.Country 
+                    : ", " + location.Country;
 
             return result;
         }
