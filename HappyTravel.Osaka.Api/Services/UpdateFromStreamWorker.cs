@@ -94,10 +94,10 @@ namespace HappyTravel.Osaka.Api.Services
             {
                 var entry = JsonSerializer.Deserialize<LocationEntry>(nameValueEntry.Value);
 
-                if (!locations.ContainsKey(entry!.UpdateEventType)) 
-                    locations[entry.UpdateEventType] = new List<Location>();
+                if (!locations.ContainsKey(entry!.Type)) 
+                    locations[entry.Type] = new List<Location>();
 
-                locations[entry.UpdateEventType].Add(entry.Location);
+                locations[entry.Type].Add(entry.Location);
             }
 
             return locations;

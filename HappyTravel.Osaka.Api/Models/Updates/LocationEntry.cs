@@ -2,7 +2,7 @@
 {
     public class LocationEntry
     {
-        public UpdateEventTypes UpdateEventType { get; init; } = UpdateEventTypes.Undefined;
+        public UpdateEventTypes Type { get; init; } = UpdateEventTypes.Undefined;
         public Location Location { get; init; } = new ();
     }
 }
