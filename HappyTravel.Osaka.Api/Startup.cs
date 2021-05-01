@@ -44,7 +44,7 @@ namespace HappyTravel.Osaka.Api
             vaultClient.Login(token).GetAwaiter().GetResult();
             var locationIndexes = vaultClient.Get(_configuration["Elasticsearch:Indexes"]).GetAwaiter().GetResult();
             services.AddElasticsearchClient(_configuration, vaultClient, locationIndexes)
-                .AddHttpClients(_configuration, vaultClient)
+                .AddHttpClients(_configuration, _hostEnvironment, vaultClient)
                 .AddResponseCompression()
                 .AddCors()
                 .AddLocalization()
