@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using HappyTravel.Osaka.Api.Services.HttpClients;
 using HappyTravel.VaultClient;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -39,7 +41,7 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
            
             services.AddAccessTokenManagement(options =>
             {
-                options.Client.Clients.Add(HttpClientNames.MapperIdentityClient, new ClientCredentialsTokenRequest
+                options.Client.Clients.Add(HttpClientNames.Identity, new ClientCredentialsTokenRequest
                     {
                         Address = $"{authorityUrl}connect/token",
                         ClientId = mapperClientOptions["clientId"],
@@ -47,13 +49,33 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                         Scope = mapperClientOptions["scope"]
                     });
             });
-            services.AddClientAccessTokenClient(HttpClientNames.MapperApi, HttpClientNames.MapperIdentityClient, 
-                    client =>
-                    {
-                        client.BaseAddress = new Uri(mapperClientOptions["endpoint"]);
-                    })
-                .AddPolicyHandler(GetDefaultRetryPolicy());
-               
+            
+            services.AddHttpClient(HttpClientNames.MapperApi, client => { client.BaseAddress = new Uri(mapperClientOptions["endpoint"]); })
+                .AddPolicyHandler((serviceProvider, _)
+                    => HttpPolicyExtensions
+                        .HandleTransientHttpError()
+                        .OrResult(result => result.StatusCode == HttpStatusCode.Unauthorized)
+                        .WaitAndRetryAsync(new[]
+                            {
+                                TimeSpan.FromMilliseconds(500),
+                                TimeSpan.FromMilliseconds(1000),
+                                TimeSpan.FromMilliseconds(3000)
+                            },
+                            (delegateHandler, timespan, retryAttempt, _) =>
+                            {
+                                var errorMessage = delegateHandler.Exception?.Message
+                                                   ??
+                                                   $"{delegateHandler.Result.StatusCode} {delegateHandler.Result.Content.ReadAsStringAsync().Result}";
+
+                                serviceProvider.GetService<ILogger<HttpClient>>()
+                                    .LogWarning(
+                                        "Delaying client {Client} for {Delay}ms: '{Message}', then making retry {Retry}",
+                                        HttpClientNames.MapperApi, timespan.TotalMilliseconds, errorMessage,
+                                        retryAttempt);
+                            }
+                        ))
+            .AddClientAccessTokenHandler(HttpClientNames.Identity);
+            
             services.AddTransient<IMapperHttpClient, MapperHttpClient>();
 
             return services;
@@ -73,16 +95,6 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
             authorityUrl = authorityOptions["authorityUrl"];
             
             return (apiName, authorityUrl);
-        }
-        
-        
-        private static IAsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy()
-        {
-            var jitter = new Random();
-
-            return HttpPolicyExtensions.HandleTransientHttpError()
-                .WaitAndRetryAsync(3, attempt 
-                    => TimeSpan.FromSeconds(Math.Pow(1.5, attempt)) + TimeSpan.FromMilliseconds(jitter.Next(0, 100)));
         }
     }
 }

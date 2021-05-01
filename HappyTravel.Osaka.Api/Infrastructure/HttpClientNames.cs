@@ -3,6 +3,6 @@
     public static class HttpClientNames
     {
         public const string MapperApi = "Mapper";
-        public const string MapperIdentityClient = "MapperIdentityClient";
+        public const string Identity = "Identity";
     }
 }

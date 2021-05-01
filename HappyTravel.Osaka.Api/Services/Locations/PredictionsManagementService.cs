@@ -59,14 +59,11 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             
             foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
             {
-                const int batchSize = 10000;
+                const int batchSize = 1000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
                     if (isFailure)
-                    {
                         _logger.LogUploadingError(error);
-                        return Result.Failure<int>(error);
-                    }
 
                     _logger.LogGetLocationsFromMapper($"'{locations.Count}' locations received from the mapper");
                     
@@ -75,10 +72,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                     
                     var (_, uploadFailure, uploadError) = await Add(locations, index, cancellationToken);
                     if (uploadFailure)
-                    {
                         _logger.LogUploadingError(uploadError);
-                        return Result.Failure<int>(uploadError);
-                    }
                     
                     locationsUploaded += locations.Count;
                 }
