@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sentry;
+using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Abstractions;
 
 namespace HappyTravel.Osaka.Api.Services
@@ -22,17 +23,17 @@ namespace HappyTravel.Osaka.Api.Services
     {
         public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, IPredictionsManagementService predictionsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
         {
-            _updateOptions = updateOptions.Value;
-            _redisCacheClient = redisCacheClient;
-            _predictionsManagementService = predictionsManagementService;
             _logger = logger;
-            Init(indexOptions.Value, out _index);
+            _updateOptions = updateOptions.Value;
+            _predictionsManagementService = predictionsManagementService;
+            _database = redisCacheClient.GetDbFromConfiguration().Database;
+            GetIndexName(indexOptions.Value, out _index);
+            InitRedisStreamIfNeeded();
         }
 
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var database = _redisCacheClient.GetDbFromConfiguration().Database;
             const int batchSize = 5;
 
             while (!cancellationToken.IsCancellationRequested)
@@ -64,25 +65,46 @@ namespace HappyTravel.Osaka.Api.Services
                 }
             }
             
-            async Task ProcessEntry(StackExchange.Redis.StreamEntry entry)
+            async Task ProcessEntry(StreamEntry entry)
             {
                 var locations = GetLocations(entry);
                 await UpdateIndex(locations, cancellationToken);
             }
             
             
-            Task<StackExchange.Redis.StreamEntry[]> GetEntries() => database!.StreamReadAsync(_updateOptions.StreamName, "0-0", batchSize);
+            Task<StreamEntry[]> GetEntries() => _database!.StreamReadAsync(_updateOptions.StreamName, "0-0", batchSize);
             
             
-            Task DeleteEntries(StackExchange.Redis.StreamEntry[] entries) => database!.StreamDeleteAsync(_updateOptions.StreamName, entries.Select(e=> e.Id).ToArray());
+            Task DeleteEntries(StreamEntry[] entries) => _database!.StreamDeleteAsync(_updateOptions.StreamName, entries.Select(e=> e.Id).ToArray());
         }
 
         
-        private void Init(IndexOptions indexOptions, out string index)
+        private void GetIndexName(IndexOptions indexOptions, out string index)
         {
             const string enLanguage = "en";
             if (!ElasticsearchHelper.TryGetIndex(indexOptions.Indexes!, enLanguage, out index))
                 throw new ArgumentException($"Failed to get an index name by the language code '{enLanguage}");
+        }
+        
+        
+        private bool InitRedisStreamIfNeeded()
+        {
+            var streamName = _updateOptions.StreamName;
+            try
+            {
+                // Throws an exceptions if the stream doesn't exist
+                _database.StreamInfo(streamName);
+
+                return false;
+            }
+            catch
+            {
+                // A value must be added to init the stream
+                var initId = _database.StreamAdd(streamName, new[] {new NameValueEntry("init", "init")});
+                _database.StreamDelete(streamName, new[] {initId});
+
+                return true;
+            }
         }
         
         
@@ -126,7 +148,7 @@ namespace HappyTravel.Osaka.Api.Services
         private readonly string _index;
         private readonly ILogger<UpdateFromStreamWorker> _logger;
         private readonly PredictionUpdateOptions _updateOptions;
-        private readonly IRedisCacheClient _redisCacheClient;
         private readonly IPredictionsManagementService _predictionsManagementService;
+        private readonly IDatabase _database;
     }
 }
