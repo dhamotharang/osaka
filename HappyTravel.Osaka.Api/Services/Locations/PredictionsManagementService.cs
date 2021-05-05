@@ -86,11 +86,11 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         public async Task<Result> Add(List<Location> locations, string index, CancellationToken cancellationToken = default)
         {
+            _logger.LogAddLocations($"'{locations.Count}' locations are adding to the index '{index}'");
+            
             var response = await _elasticClient.BulkAsync(b
                 => b.IndexMany(Build(locations)), cancellationToken);
             
-            _logger.LogAddLocations($"'{locations.Count}' locations have been added to the index '{index}'");
-
             if (!response.IsValid)
                 return Result.Failure(response.DebugInformation);
             
@@ -102,13 +102,13 @@ namespace HappyTravel.Osaka.Api.Services.Locations
       
         public async Task<Result> Update(List<Location> locations, string index, CancellationToken cancellationToken = default)
         {
+            _logger.LogUpdateLocations($"'{locations.Count}' locations are updating in the index '{index}'");
+            
             var response = await _elasticClient
                 .BulkAsync(b 
                     => b.Index(index)
                         .UpdateMany(Build(locations), (bd, l) 
                             => bd.Id(l.HtId).Doc(l)), cancellationToken);
-            
-            _logger.LogUpdateLocations($"'{locations.Count}' locations have been updated in the index '{index}'");
             
             if (!response.IsValid)
                 return Result.Failure(response.DebugInformation);
@@ -121,12 +121,12 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         
         public async Task<Result> Remove(List<Location> locations, string index, CancellationToken cancellationToken = default)
         {
+            _logger.LogRemoveLocations($"'{locations.Count}' locations are removing from the index '{index}'");
+        
             var response = await _elasticClient.BulkAsync(b 
                 => b.Index(index)
                     .DeleteMany(Build(locations), (bd, l) 
                         => bd.Document(l)), cancellationToken);
-            
-            _logger.LogUpdateLocations($"'{locations.Count}' locations have been removed from the index '{index}'");
             
             if (!response.IsValid)
                 return Result.Failure(response.DebugInformation);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Logging;
 using HappyTravel.Osaka.Api.Models;
@@ -129,11 +130,15 @@ namespace HappyTravel.Osaka.Api.Services
         private async Task UpdateIndex(Dictionary<UpdateEventTypes, List<Location>> locations, CancellationToken cancellationToken)
         {
             foreach (var locationKeyValue in locations)
-                await UpdateIndex(locationKeyValue.Key, locationKeyValue.Value, cancellationToken);
+            {
+                var (_, isFailure, error) = await UpdateIndex(locationKeyValue.Key, locationKeyValue.Value, cancellationToken);
+                if (isFailure && !string.IsNullOrEmpty(error))
+                    _logger.LogUploadingError(error);
+            }
         }
 
 
-        private Task UpdateIndex(UpdateEventTypes updateEventType, List<Location> locations, CancellationToken cancellationToken)
+        private Task<Result> UpdateIndex(UpdateEventTypes updateEventType, List<Location> locations, CancellationToken cancellationToken)
         {
             return updateEventType switch
             {
