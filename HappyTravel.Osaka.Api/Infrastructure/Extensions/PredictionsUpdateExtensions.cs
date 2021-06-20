@@ -16,7 +16,6 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
             string syncTimeout;
             string streamName;
             
-            
             if (environment.IsLocal())
             {
                 endpoint = configuration["PredictionsUpdate:Redis:Endpoint"];
