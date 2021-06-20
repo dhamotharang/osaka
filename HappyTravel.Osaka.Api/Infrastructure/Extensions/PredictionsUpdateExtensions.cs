@@ -13,12 +13,16 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
         {
             string endpoint;
             string port;
+            string syncTimeout;
             string streamName;
+            
+            
             if (environment.IsLocal())
             {
                 endpoint = configuration["PredictionsUpdate:Redis:Endpoint"];
                 port = configuration["PredictionsUpdate:Redis:Port"];
                 streamName = configuration["PredictionsUpdate:Redis:StreamName"];
+                syncTimeout = configuration["PredictionsUpdate:Redis:SyncTimeout"];
             }
             else
             {
@@ -26,6 +30,7 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                 endpoint = redisOptions["endpoint"];
                 port = redisOptions["port"];
                 streamName = redisOptions["streamName"];
+                syncTimeout = redisOptions["syncTimeout"];
             }
             
             services.AddStackExchangeRedisExtensions<DefaultSerializer>(s 
@@ -38,7 +43,8 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                             Host = endpoint,
                             Port = int.Parse(port)
                         }
-                    }
+                    },
+                    SyncTimeout = int.Parse(syncTimeout)
                 });
             services.Configure<PredictionUpdateOptions>(o =>
             {
