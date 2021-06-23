@@ -1,4 +1,4 @@
-﻿using HappyTravel.EdoContracts.GeoData.Enums;
+﻿using HappyTravel.MapperContracts.Internal.Mappings.Enums;
 using HappyTravel.Osaka.Api.Models.Updates;
 using Nest;
 

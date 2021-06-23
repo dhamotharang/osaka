@@ -1,5 +1,4 @@
 ﻿using System;
-using HappyTravel.EdoContracts.GeoData.Enums;
 using Nest;
 
 namespace HappyTravel.Osaka.Api.Models.Elasticsearch
