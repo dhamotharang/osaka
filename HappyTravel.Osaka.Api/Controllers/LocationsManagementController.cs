@@ -7,7 +7,6 @@ using HappyTravel.Osaka.Api.Services.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Sentry;
 
 namespace HappyTravel.Osaka.Api.Controllers
 {
@@ -39,8 +38,8 @@ namespace HappyTravel.Osaka.Api.Controllers
             Task.Run(async () =>
             {
                 using var scope = _serviceProvider.CreateScope();
-                var locationsManagementService = scope.ServiceProvider.GetRequiredService<ILocationsManagementService>();
-                await locationsManagementService.ReUpload(_locationsUploadTokenSource.Token);
+                var locationsManagementService = scope.ServiceProvider.GetRequiredService<IPredictionsManagementService>();
+                await locationsManagementService.ReuploadAllPredictionsFromMapper(_locationsUploadTokenSource.Token);
             }, _locationsUploadTokenSource.Token);
             // Wait for the task run
             Task.Delay(1000);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HappyTravel.VaultClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace HappyTravel.Osaka.Api.Infrastructure
 {

@@ -1,32 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.MapperContracts.Internal.Mappings.Enums;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
 namespace HappyTravel.Osaka.Api.Services.HttpClients
 {
     public class MapperHttpClient : IMapperHttpClient
     {
-        public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions, IHttpContextAccessor httpContextAccessor)
+        public MapperHttpClient(IHttpClientFactory httpClientFactory, IOptions<JsonOptions> jsonOptions)
         {
             _jsonSerializerOptions = jsonOptions.Value.JsonSerializerOptions;
             _httpClient = httpClientFactory.CreateClient(HttpClientNames.MapperApi);
-
-            if (_httpClient.DefaultRequestHeaders.Contains(HeaderNames.Authorization)) return;
-            
-            var authToken = httpContextAccessor.HttpContext!.Request.Headers[HeaderNames.Authorization];
-            _httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, authToken.Single());
         }
 
 
@@ -36,9 +28,6 @@ namespace HappyTravel.Osaka.Api.Services.HttpClients
         
         private async Task<Result<TResponse>> Execute<TResponse>(HttpRequestMessage requestMessage, string languageCode = "", CancellationToken cancellationToken = default)
         {
-            if (!_httpClient.DefaultRequestHeaders.Contains(HeaderNames.AcceptLanguage))
-                _httpClient.DefaultRequestHeaders.Add(HeaderNames.AcceptLanguage, languageCode);
-            
             var responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
             var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
