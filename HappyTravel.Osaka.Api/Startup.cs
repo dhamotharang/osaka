@@ -58,7 +58,6 @@ namespace HappyTravel.Osaka.Api
                     options.JaegerPort = _hostEnvironment.IsLocal()
                         ? _configuration.GetValue<int>("Jaeger:AgentPort")
                         : _configuration.GetValue<int>(_configuration.GetValue<string>("Jaeger:AgentPort"));
-                    options.RedisEndpoint = _configuration.GetValue<string>(_configuration.GetValue<string>("Redis:Endpoint"));
                 })
                 .AddControllers()
                 .AddJsonOptions(options =>
