@@ -15,6 +15,7 @@ using HappyTravel.Osaka.Api.Options;
 using HappyTravel.Osaka.Api.Services;
 using HappyTravel.Osaka.Api.Services.Locations;
 using HappyTravel.StdOutLogger.Extensions;
+using HappyTravel.Telemetry.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
@@ -48,7 +49,17 @@ namespace HappyTravel.Osaka.Api
                 .AddResponseCompression()
                 .AddCors()
                 .AddLocalization()
-                .AddTracing(_hostEnvironment, _configuration)
+                .AddTracing(_configuration, options =>
+                {
+                    options.ServiceName = $"{_hostEnvironment.ApplicationName}-{_hostEnvironment.EnvironmentName}";
+                    options.JaegerHost = _hostEnvironment.IsLocal()
+                        ? _configuration.GetValue<string>("Jaeger:AgentHost")
+                        : _configuration.GetValue<string>(_configuration.GetValue<string>("Jaeger:AgentHost"));
+                    options.JaegerPort = _hostEnvironment.IsLocal()
+                        ? _configuration.GetValue<int>("Jaeger:AgentPort")
+                        : _configuration.GetValue<int>(_configuration.GetValue<string>("Jaeger:AgentPort"));
+                    options.RedisEndpoint = _configuration.GetValue<string>(_configuration.GetValue<string>("Redis:Endpoint"));
+                })
                 .AddControllers()
                 .AddJsonOptions(options =>
                 {
