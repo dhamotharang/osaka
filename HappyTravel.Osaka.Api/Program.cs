@@ -73,11 +73,7 @@ namespace HappyTravel.Osaka.Api
                             setup.RequestIdHeader = Constants.DefaultRequestIdHeader;
                             setup.UseUtcTimestamp = true;
                         });
-                        logging.AddSentry(c =>
-                        {
-                            c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", hostingContext.Configuration);
-                            c.Environment = env.EnvironmentName;
-                        });
+                        logging.AddSentry();
                     }
                 });
     }
