@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using HappyTravel.ConsulKeyValueClient.ConfigurationProvider.Extensions;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.StdOutLogger.Extensions;
@@ -22,7 +23,24 @@ namespace HappyTravel.Osaka.Api
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>().UseSetting(WebHostDefaults.SuppressStatusMessagesKey, "true");
+                    webBuilder.UseStartup<Startup>()
+                        .UseSentry(options =>
+                        {
+                            options.Dsn = Environment.GetEnvironmentVariable("HTDC_OSAKA_SENTRY_ENDPOINT");
+                            options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                            options.IncludeActivityData = true;
+                            options.BeforeSend = sentryEvent =>
+                            {
+                                foreach (var (key, value) in OpenTelemetry.Baggage.Current)
+                                    sentryEvent.SetTag(key, value);
+                                    
+                                sentryEvent.SetTag("TraceId", Activity.Current?.TraceId.ToString() ?? string.Empty);
+                                sentryEvent.SetTag("SpanId", Activity.Current?.SpanId.ToString() ?? string.Empty);
+
+                                return sentryEvent;
+                            };
+                        })
+                        .UseSetting(WebHostDefaults.SuppressStatusMessagesKey, "true");
                 })
                 .UseDefaultServiceProvider(s =>
                 {
