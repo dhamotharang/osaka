@@ -96,11 +96,16 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             string GetContextName(MapperLocationTypes type) => type.ToString("G").ToLowerInvariant();
 
             
-            IEnumerable<Location> GetLocations(ISearchResponse<Location> searchResponse, string suggester, int foundedLocationCount = 0) 
-                => searchResponse.Suggest[suggester]
+            IEnumerable<Location> GetLocations(ISearchResponse<Location> searchResponse, string suggester, int foundedLocationCount = 0)
+            {
+                if (!searchResponse.Suggest.ContainsKey(suggester))
+                    return Enumerable.Empty<Location>();
+                
+                return searchResponse.Suggest[suggester]
                     .SelectMany(c => c.Options)
                     .Select(o => o.Source)
                     .Take(MaxLocationCount - foundedLocationCount);
+            }
         }
 
         
