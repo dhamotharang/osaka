@@ -12,8 +12,7 @@ using HappyTravel.Osaka.Api.Filters.Authorization;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Extensions;
 using HappyTravel.Osaka.Api.Options;
-using HappyTravel.Osaka.Api.Services;
-using HappyTravel.Osaka.Api.Services.Locations;
+using HappyTravel.Osaka.Api.Services.PredictionServices;
 using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.Telemetry.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -67,8 +66,7 @@ namespace HappyTravel.Osaka.Api
                     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                     options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals |
                                                                    JsonNumberHandling.AllowReadingFromString;
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
-                    options.JsonSerializerOptions.Converters.Add(new NetTopologySuite.IO.Converters.GeoJsonConverterFactory());
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
                 });
             
             services.ConfigureAuthentication(_configuration, _hostEnvironment, vaultClient);
@@ -137,7 +135,6 @@ namespace HappyTravel.Osaka.Api
                 .AddDataAnnotations();
             
             services.AddTransient<IPredictionsService, PredictionsService>();
-            services.AddTransient<ILocationsService, LocationsService>();
             services.AddSingleton<IPredictionsManagementService, PredictionsManagementService>();
             
             services.Configure<RequestLocalizationOptions>(options =>

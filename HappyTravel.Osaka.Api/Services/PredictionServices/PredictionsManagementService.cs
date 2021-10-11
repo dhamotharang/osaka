@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -7,21 +8,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.MapperContracts.Internal.Mappings.Enums;
+using HappyTravel.MapperContracts.Public.Locations;
 using HappyTravel.MultiLanguage;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Extensions;
 using HappyTravel.Osaka.Api.Infrastructure.Logging;
-using HappyTravel.Osaka.Api.Models;
 using HappyTravel.Osaka.Api.Models.Elasticsearch;
 using HappyTravel.Osaka.Api.Services.HttpClients;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
 using IndexOptions = HappyTravel.Osaka.Api.Options.IndexOptions;
-using Location = HappyTravel.Osaka.Api.Models.Location;
 using Result = CSharpFunctionalExtensions.Result;
 
-namespace HappyTravel.Osaka.Api.Services.Locations
+namespace HappyTravel.Osaka.Api.Services.PredictionServices
 {
     public class PredictionsManagementService : IPredictionsManagementService
     {
@@ -34,7 +34,6 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
 
         
-        [Obsolete("Full re-upload of predictions from the mapper is deprecated")]
         public async Task<Result<int>> ReuploadAllPredictionsFromMapper(CancellationToken cancellationToken = default)
         {
             _logger.LogStartUploadingLocations("Start locations upload");
@@ -58,20 +57,22 @@ namespace HappyTravel.Osaka.Api.Services.Locations
 
             var locationsUploaded = 0;
             
-            foreach (var locationType in Enum.GetValues<MapperLocationTypes>())
+            foreach (var locationType in Enum.GetValues<MapperLocationTypes>().Where(t => t != MapperLocationTypes.Undefined))
             {
-                const int batchSize = 1000;
+                const int batchSize = 2000;
                 await foreach (var (_, isFailure, locations, error) in GetFromMapper(locationType, languageCode, batchSize, cancellationToken))
                 {
                     if (isFailure)
                         _logger.LogUploadingError(error);
 
                     _logger.LogGetLocationsFromMapper($"'{locations.Count}' locations received from the mapper");
-                    
+
+                    bool FilterLocations(LocationDetailedInfo l) => l.NumberOfAccommodations > 0;
+
                     if (!locations.Any())
                         continue;
                     
-                    var (_, uploadFailure, uploadError) = await Add(locations, index, cancellationToken);
+                    var (_, uploadFailure, uploadError) = await Add(locations.Where(FilterLocations).ToList(), index, cancellationToken);
                     if (uploadFailure)
                         _logger.LogUploadingError(uploadError);
                     
@@ -85,7 +86,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
 
         
-        public async Task<Result> Add(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        public async Task<Result> Add(List<LocationDetailedInfo> locations, string index, CancellationToken cancellationToken = default)
         {
             _logger.LogAddLocations($"'{locations.Count}' locations are adding to the index '{index}'");
             
@@ -100,8 +101,9 @@ namespace HappyTravel.Osaka.Api.Services.Locations
             return Result.Success();
         }
 
+        
       
-        public async Task<Result> Update(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        public async Task<Result> Update(List<LocationDetailedInfo> locations, string index, CancellationToken cancellationToken = default)
         {
             _logger.LogUpdateLocations($"'{locations.Count}' locations are updating in the index '{index}'");
             
@@ -109,7 +111,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                 .BulkAsync(b 
                     => b.Index(index)
                         .UpdateMany(Build(locations), (bd, l) 
-                            => bd.Id(l.HtId).Doc(l)), cancellationToken);
+                            => bd.Id(l.Id).Doc(l)), cancellationToken);
             
             if (!response.IsValid)
                 return Result.Failure(response.DebugInformation);
@@ -120,7 +122,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
         
         
-        public async Task<Result> Remove(List<Location> locations, string index, CancellationToken cancellationToken = default)
+        public async Task<Result> Remove(List<LocationDetailedInfo> locations, string index, CancellationToken cancellationToken = default)
         {
             _logger.LogRemoveLocations($"'{locations.Count}' locations are removing from the index '{index}'");
         
@@ -151,10 +153,10 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
         
         
-        private async IAsyncEnumerable<Result<List<Location>>> GetFromMapper(MapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        private async IAsyncEnumerable<Result<List<LocationDetailedInfo>>> GetFromMapper(MapperLocationTypes locationType, string languageCode, int batchSize, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var skip = 0;
-            List<Location> locations;
+            List<LocationDetailedInfo> locations;
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -162,7 +164,7 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                 string error;
                 (_, isFailure, locations, error) = await _mapperHttpClient.GetLocations(locationType, languageCode, default, skip, batchSize, cancellationToken);
                 if (isFailure)
-                    yield return Result.Failure<List<Location>>(error);
+                    yield return Result.Failure<List<LocationDetailedInfo>>(error);
                 
                 yield return locations;
                 
@@ -185,11 +187,11 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
         
         
-        private List<Models.Elasticsearch.Location> Build(List<Location> locations)
+        private List<ElasticLocation> Build(List<LocationDetailedInfo> locations)
             => locations.Select(Build).ToList();
 
 
-        private Models.Elasticsearch.Location Build(Location location)
+        private ElasticLocation Build(LocationDetailedInfo location)
         {
             var uploadedDate = DateTime.UtcNow;
             return new()
@@ -198,23 +200,27 @@ namespace HappyTravel.Osaka.Api.Services.Locations
                 Name = location.Name,
                 Locality = location.Locality,
                 Country = location.Country,
-                CountryCode = location.CountryCode,
                 Suggestion = BuildSuggestion(location),
                 PredictionText = BuildPredictionText(location),
                 Coordinates = new GeoCoordinate(location.Coordinates.Latitude, location.Coordinates.Longitude),
-                DistanceInMeters = location.DistanceInMeters,
-                LocationType = location.LocationType.ToString().ToLowerInvariant(),
-                Type = location.Type,
+                Type = location.Type.ToString().ToLowerInvariant(),
+                NumberOfAccommodations = location.NumberOfAccommodations,
+                IsConfirmed = location.IsConfirmed,
+                IsDirectContract = location.IsDirectContract,
+                IsInDomesticZone = location.IsInDomesticZone,
                 Modified = uploadedDate
             };
         }
 
 
-        private static Suggestion BuildSuggestion(Location location)
+        private static Suggestion BuildSuggestion(LocationDetailedInfo location)
         {
-            var suggest = new Suggestion();
+            var suggest = new Suggestion
+            {
+                Weight = location.NumberOfAccommodations
+            };
 
-            suggest.Input = location.LocationType switch
+            suggest.Input = location.Type switch
             {
                 MapperLocationTypes.Country => new List<string> {location.Country},
                 MapperLocationTypes.Locality => new List<string>
@@ -240,9 +246,9 @@ namespace HappyTravel.Osaka.Api.Services.Locations
         }
         
         
-        private static string BuildPredictionText(Location location)
+        private static string BuildPredictionText(LocationDetailedInfo location)
         {
-            var result = location.LocationType == MapperLocationTypes.Accommodation || location.LocationType == MapperLocationTypes.LocalityZone
+            var result = location.Type is MapperLocationTypes.Accommodation or MapperLocationTypes.LocalityZone
                 ? location.Name
                 : string.Empty;
             

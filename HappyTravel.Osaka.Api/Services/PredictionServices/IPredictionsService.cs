@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HappyTravel.Osaka.Api.Models.Response;
 
-namespace HappyTravel.Osaka.Api.Services
+namespace HappyTravel.Osaka.Api.Services.PredictionServices
 {
     public interface IPredictionsService
     {

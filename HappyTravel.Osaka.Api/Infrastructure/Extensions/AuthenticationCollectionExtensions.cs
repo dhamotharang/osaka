@@ -50,7 +50,8 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                     });
             });
             
-            services.AddHttpClient(HttpClientNames.MapperApi, client => { client.BaseAddress = new Uri(mapperClientOptions["endpoint"]); })
+            //services.AddHttpClient(HttpClientNames.MapperApi, client => { client.BaseAddress = new Uri(mapperClientOptions["endpoint"]); })
+            services.AddHttpClient(HttpClientNames.MapperApi, client => { client.BaseAddress = new Uri("http://localhost:5080"); })
                 .AddPolicyHandler((serviceProvider, _)
                     => HttpPolicyExtensions
                         .HandleTransientHttpError()

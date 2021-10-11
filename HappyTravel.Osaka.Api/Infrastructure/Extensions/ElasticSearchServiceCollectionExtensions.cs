@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using HappyTravel.MultiLanguage;
+using HappyTravel.Osaka.Api.Models.Elasticsearch;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
@@ -64,7 +65,7 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                             .Analyzers(analyzer 
                                 => analyzer.Custom("predictions_analyzer", predictionAnalyzer => predictionAnalyzer.Filters("lowercase", "asciifolding", "synonyms_filter", "stopwords_filter").Tokenizer("standard"))
                                     .Custom("full_text_analyzer", ngramAnalyzer => ngramAnalyzer.Filters("lowercase", "edge_ngram_filter", "asciifolding").Tokenizer("standard")))))
-                    .Map<Models.Elasticsearch.Location>(mapping => mapping.Properties(properties =>
+                    .Map<ElasticLocation>(mapping => mapping.Properties(properties =>
                             properties.Keyword(property => property.Name(prediction => prediction.Id))
                                 .Keyword(completion => completion.Name(location => location.Country))
                                 .Keyword(completion => completion.Name(location => location.Locality))
@@ -75,17 +76,19 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                                     .PreserveSeparators(false)
                                     .PreservePositionIncrements(false)
                                     .MaxInputLength(80)
-                                    .Contexts(context =>
-                                        context.Category(category => category.Name("type").Path(location => location.LocationType))
-                                            .Category(category => category.Name("country").Path(location => location.Country))
-                                            .Category(category => category.Name("locality").Path(location => location.Locality))))
+                                    .Contexts(context 
+                                        => context.Category(category => category.Name($"{nameof(ElasticLocation.Type).ToLowerInvariant()}").Path(location => location.Type))
+                                            .Category(category => category.Name($"{nameof(ElasticLocation.IsConfirmed).ToLowerInvariant()}").Path(location => location.IsConfirmed))
+                                            .Category(category => category.Name($"{nameof(ElasticLocation.IsDirectContract).ToLowerInvariant()}").Path(location => location.IsDirectContract))
+                                            .Category(category => category.Name($"{nameof(ElasticLocation.IsInDomesticZone).ToLowerInvariant()}").Path(location => location.IsInDomesticZone))))
                                 .Text(property => property.Name(prediction => prediction.PredictionText)
                                     .Analyzer("full_text_analyzer")
                                     .SearchAnalyzer("standard"))
-                                .Keyword(property => property.Name(prediction => prediction.CountryCode))
                                 .GeoPoint(property => property.Name(prediction => prediction.Coordinates))
-                                .Number(property => property.Name(prediction => prediction.DistanceInMeters).Type(NumberType.Double))
-                                .Keyword(property => property.Name(prediction => prediction.LocationType)))
+                                .Number(property => property.Name(prediction => prediction.NumberOfAccommodations).Type(NumberType.Integer))
+                                .Boolean(property => property.Name(predictions => predictions.IsConfirmed))
+                                .Boolean(property => property.Name(predictions => predictions.IsDirectContract))
+                                .Boolean(property => property.Name(predictions => predictions.IsInDomesticZone)))
                         .AutoMap()));
         }
 

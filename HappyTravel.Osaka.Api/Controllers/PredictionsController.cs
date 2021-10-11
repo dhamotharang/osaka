@@ -3,7 +3,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using HappyTravel.Osaka.Api.Models.Response;
-using HappyTravel.Osaka.Api.Services;
+using HappyTravel.Osaka.Api.Services.PredictionServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Osaka.Api.Controllers
@@ -25,6 +26,7 @@ namespace HappyTravel.Osaka.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(List<Prediction>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SearchPredictions([FromQuery] string query, CancellationToken cancellationToken = default)

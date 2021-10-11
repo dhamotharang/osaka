@@ -6,8 +6,7 @@
   <ItemGroup>
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.15.1" />
     <PackageReference Include="HappyTravel.ConsulKeyValueClient.ConfigurationProvider" Version="1.5.0" />
-    <PackageReference Include="HappyTravel.ErrorHandling" Version="1.2.2" />
-    <PackageReference Include="HappyTravel.MapperContracts" Version="0.8.9" />
+    <PackageReference Include="HappyTravel.ErrorHandling" Version="1.2.0" />
     <PackageReference Include="HappyTravel.MultiLanguage" Version="1.0.2" />
     <PackageReference Include="HappyTravel.StdOutLogger" Version="1.4.0" />
     <PackageReference Include="HappyTravel.VaultClient" Version="1.1.0" />
@@ -17,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="5.0.5" />
-    <PackageReference Include="NEST" Version="7.12.0" />
+    <PackageReference Include="NEST" Version="7.15.0" />
     <PackageReference Include="HappyTravel.Telemetry" Version="0.9.0" />
     <PackageReference Include="Polly" Version="7.2.1" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.6.0" />
@@ -29,5 +28,8 @@
     <None Update="HappyTravel.Osaka.Api.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\mapper-contracts\HappyTravel.MapperContracts\HappyTravel.MapperContracts.csproj" />
   </ItemGroup>
 </Project>

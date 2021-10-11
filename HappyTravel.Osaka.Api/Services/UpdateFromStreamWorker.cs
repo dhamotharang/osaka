@@ -5,12 +5,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.MapperContracts.Public.Locations;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Logging;
 using HappyTravel.Osaka.Api.Models;
 using HappyTravel.Osaka.Api.Models.Updates;
 using HappyTravel.Osaka.Api.Options;
-using HappyTravel.Osaka.Api.Services.Locations;
+using HappyTravel.Osaka.Api.Services.PredictionServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -109,16 +110,16 @@ namespace HappyTravel.Osaka.Api.Services
         }
         
         
-        private Dictionary<UpdateEventTypes, List<Location>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
+        private Dictionary<UpdateEventTypes, List<LocationDetailedInfo>> GetLocations(StackExchange.Redis.StreamEntry streamEntry)
         {
-            var locations = new Dictionary<UpdateEventTypes, List<Location>>();
+            var locations = new Dictionary<UpdateEventTypes, List<LocationDetailedInfo>>();
 
             foreach (var nameValueEntry in streamEntry.Values)
             {
                 var entry = JsonSerializer.Deserialize<LocationEntry>(nameValueEntry.Value);
 
                 if (!locations.ContainsKey(entry!.Type)) 
-                    locations[entry.Type] = new List<Location>();
+                    locations[entry.Type] = new List<LocationDetailedInfo>();
 
                 locations[entry.Type].Add(entry.Location);
             }
@@ -127,7 +128,7 @@ namespace HappyTravel.Osaka.Api.Services
         }
         
 
-        private async Task UpdateIndex(Dictionary<UpdateEventTypes, List<Location>> locations, CancellationToken cancellationToken)
+        private async Task UpdateIndex(Dictionary<UpdateEventTypes, List<LocationDetailedInfo>> locations, CancellationToken cancellationToken)
         {
             foreach (var locationKeyValue in locations)
             {
@@ -138,7 +139,7 @@ namespace HappyTravel.Osaka.Api.Services
         }
 
 
-        private Task<Result> UpdateIndex(UpdateEventTypes updateEventType, List<Location> locations, CancellationToken cancellationToken)
+        private Task<Result> UpdateIndex(UpdateEventTypes updateEventType, List<LocationDetailedInfo> locations, CancellationToken cancellationToken)
         {
             return updateEventType switch
             {
