@@ -5,25 +5,31 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
 {
     public static class ElasticSynonymsHelper
     {
-        public static IEnumerable<string> GetSynonyms()
+        public static IEnumerable<string> GetAllSynonyms() 
+            => GetCountrySynonyms().Concat(GetLocalitySynonyms());
+        
+
+        public static IEnumerable<string> GetCountrySynonyms()
         {
-            var locationNameRetriever = new LocationNameNormalizer.FileLocationNameRetriever();
-            var countries = locationNameRetriever.RetrieveCountries();
+            var countries = LocationNameRetriever.RetrieveCountries();
             
-            var countrySynonyms = countries.Select(c => FilterSynonyms(c.Name.Variants))
+            return countries.Select(c => FilterSynonyms(c.Name.Variants))
                 .Where(IsNotOneWordList)
                 .Select(CreateSynonym);
+        }
 
-            var localitySynonyms = countries
+        public static IEnumerable<string> GetLocalitySynonyms()
+        {
+            var countries = LocationNameRetriever.RetrieveCountries();
+            
+            return countries
                 .Where(c => c.Localities != null)
                 .SelectMany(c => c.Localities)
                 .Select(l => FilterSynonyms(l.Name.Variants))
                 .Where(IsNotOneWordList)
                 .Select(CreateSynonym);
-
-            return countrySynonyms.Concat(localitySynonyms);
         }
-
+        
         
         private static IEnumerable<string> FilterSynonyms(IEnumerable<string> names)
             => names.Select(RemoveArticles).Distinct();
@@ -53,5 +59,8 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
         
         private static string CreateSynonym(IEnumerable<string> names) 
             => $"{string.Join(", ", names.Skip(1))} => {names.First()}".ToLowerInvariant();
+
+        
+        private static LocationNameNormalizer.FileLocationNameRetriever LocationNameRetriever => new();
     }
 }

@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.MapperContracts.Internal.Mappings.Enums;
 using HappyTravel.MapperContracts.Public.Locations;
+using HappyTravel.MapperContracts.Public.StaticDataPublications;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Country = HappyTravel.MapperContracts.Public.StaticDataPublications.Country;
+using Locality = HappyTravel.MapperContracts.Public.StaticDataPublications.Locality;
 
 namespace HappyTravel.Osaka.Api.Services.HttpClients
 {
@@ -24,11 +27,19 @@ namespace HappyTravel.Osaka.Api.Services.HttpClients
         }
 
 
-        public Task<Result<List<LocationDetailedInfo>>> GetLocations(MapperLocationTypes locationType, string languageCode, DateTime fromDate, int skip = 0, int top = 20000, CancellationToken cancellationToken = default)
-            => Post<List<LocationDetailedInfo>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/locations/?type={locationType}&modified={fromDate:s}&skip={skip}&top={top}"), languageCode, cancellationToken);
+        public Task<Result<List<Country>>> GetCountries(DateTime fromDate, int skip = 0, int top = 2000, CancellationToken cancellationToken = default)
+            => Send<List<Country>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/publications/countries?modified={fromDate:s}&skip={skip}&top={top}"), cancellationToken);
 
         
-        private async Task<Result<TResponse>> Post<TResponse>(HttpRequestMessage requestMessage, string languageCode = "", CancellationToken cancellationToken = default)
+        public Task<Result<List<Locality>>> GetLocalities(DateTime fromDate, int skip = 0, int top = 2000, CancellationToken cancellationToken = default)
+            => Send<List<Locality>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/publications/localities?modified={fromDate:s}&skip={skip}&top={top}"), cancellationToken);
+        
+        
+        public Task<Result<List<Accommodation>>> GetAccommodations(DateTime fromDate, int skip = 0, int top = 2000, CancellationToken cancellationToken = default)
+            => Send<List<Accommodation>>(new HttpRequestMessage(HttpMethod.Get, $"/api/1.0/publications/accommodations?modified={fromDate:s}&skip={skip}&top={top}"), cancellationToken);
+
+        
+        private async Task<Result<TResponse>> Send<TResponse>(HttpRequestMessage requestMessage, CancellationToken cancellationToken = default)
         {
             try
             {

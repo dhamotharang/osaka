@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HappyTravel.Osaka.Api.Filters.Authorization;
 using HappyTravel.Osaka.Api.Services.PredictionServices;
+using HappyTravel.Osaka.Api.Services.PredictionServices.Management;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +40,7 @@ namespace HappyTravel.Osaka.Api.Controllers
             Task.Run(async () =>
             {
                 using var scope = _serviceProvider.CreateScope();
-                var predictionsManagementService = scope.ServiceProvider.GetRequiredService<IPredictionsManagementService>();
+                var predictionsManagementService = scope.ServiceProvider.GetRequiredService<PredictionsManagementService>();
                 await predictionsManagementService.ReuploadAllPredictionsFromMapper(_predictionsUploadTokenSource.Token);
             }, _predictionsUploadTokenSource.Token);
             // Wait for the task run

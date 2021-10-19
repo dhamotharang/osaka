@@ -11,8 +11,8 @@ using HappyTravel.Osaka.Api.Filters;
 using HappyTravel.Osaka.Api.Filters.Authorization;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Extensions;
-using HappyTravel.Osaka.Api.Options;
 using HappyTravel.Osaka.Api.Services.PredictionServices;
+using HappyTravel.Osaka.Api.Services.PredictionServices.Management;
 using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.Telemetry.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -42,8 +42,8 @@ namespace HappyTravel.Osaka.Api
             using var vaultClient = VaultHelper.CreateVaultClient(_configuration);
             var token = _configuration[_configuration["Vault:Token"]];
             vaultClient.Login(token).GetAwaiter().GetResult();
-            var locationIndexes = vaultClient.Get(_configuration["Elasticsearch:Indexes"]).GetAwaiter().GetResult();
-            services.AddElasticsearchClient(_configuration, vaultClient, locationIndexes)
+            
+            services.ConfigureElastic(_configuration, vaultClient)
                 .AddHttpClients(_configuration, _hostEnvironment, vaultClient)
                 .AddResponseCompression()
                 .AddCors()
@@ -135,7 +135,8 @@ namespace HappyTravel.Osaka.Api
                 .AddDataAnnotations();
             
             services.AddTransient<IPredictionsService, PredictionsService>();
-            services.AddSingleton<IPredictionsManagementService, PredictionsManagementService>();
+            services.AddSingleton<PredictionsReUploader>();
+           
             
             services.Configure<RequestLocalizationOptions>(options =>
             {
@@ -149,9 +150,7 @@ namespace HappyTravel.Osaka.Api
 
                 options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider { Options = options });
             });
-            services.Configure<IndexOptions>(o => o.Indexes = locationIndexes);
-
-            services.AddHealthChecks().AddCheck<ElasticSearchHealthCheck>("ElasticSearch");
+            services.AddHealthChecks().AddCheck<ElasticHealthCheck>("ElasticSearch");
             
             services.AddPredictionsUpdate(vaultClient, _configuration, _hostEnvironment);
         }

@@ -6,20 +6,20 @@ using HappyTravel.MapperContracts.Internal.Mappings.Enums;
 using HappyTravel.MultiLanguage;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Logging;
-using HappyTravel.Osaka.Api.Models.Elasticsearch;
+using HappyTravel.Osaka.Api.Models.Elastic;
 using HappyTravel.Osaka.Api.Models.Response;
+using HappyTravel.Osaka.Api.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
-using IndexOptions = HappyTravel.Osaka.Api.Options.IndexOptions;
 
 namespace HappyTravel.Osaka.Api.Services.PredictionServices
 {
     public class PredictionsService : IPredictionsService
     {
-        public PredictionsService(IElasticClient elasticClient, IOptions<IndexOptions> indexOptions, ILogger<IPredictionsService> logger)
+        public PredictionsService(IElasticClient elasticClient, IOptions<IndexesOptions> indexOptions, ILogger<IPredictionsService> logger)
         {
-            _indexOptions = indexOptions.Value;
+            _indexesOptions = indexOptions.Value;
             _elasticClient = elasticClient;
             _logger = logger;
         }
@@ -29,7 +29,7 @@ namespace HappyTravel.Osaka.Api.Services.PredictionServices
         {
             _logger.LogPredictionsQuery(query);
             
-            ElasticsearchHelper.TryGetIndex(_indexOptions.Indexes!, Languages.English, out var index);
+            ElasticHelper.TryGetIndex(_indexesOptions.Indexes!, Languages.English, out var index);
             
             var locations = await SearchSuggestions(index, query, cancellationToken);
 
@@ -69,25 +69,30 @@ namespace HappyTravel.Osaka.Api.Services.PredictionServices
                 return suggestContainer
                     .Completion(countrySuggester, suggester => AddSuggester(suggester, MapperLocationTypes.Country))
                     .Completion(localitySuggester, suggester => AddSuggester(suggester, MapperLocationTypes.Locality))
-                    .Completion(accommodationSuggester, suggester => AddSuggester(suggester, MapperLocationTypes.Accommodation));
+                    .Completion(accommodationSuggester, AddAccommodationSuggester);
 
                 ICompletionSuggester AddSuggester(CompletionSuggesterDescriptor<ElasticLocation> suggester,
                     MapperLocationTypes locationType) 
                     => suggester.Field(field => field.Suggestion)
                         .Prefix(value)
-                        .Contexts(queriesDescriptor => queriesDescriptor.Context("type", category => category.Context(GetContextName(locationType))))
+                        .Contexts(queriesDescriptor => queriesDescriptor.Context(AccommodationContextCategoryNames.LocationType, category
+                            => category.Context(GetContextName(locationType))))
                         .Size(MaxLocationCount)
                         .SkipDuplicates();
 
-                ICompletionSuggester AddAccommodationSuggester(CompletionSuggesterDescriptor<ElasticLocation> suggester,
-                    MapperLocationTypes contextType)
+                ICompletionSuggester AddAccommodationSuggester(CompletionSuggesterDescriptor<ElasticLocation> suggester)
                     => suggester.Field(field => field.Suggestion)
                         .Prefix(value)
-                        .Contexts(queriesDescriptor => queriesDescriptor.Context("type",
-                            category => category.Context(GetContextName(MapperLocationTypes.Accommodation)),
-                            category => category.Context($"{nameof(ElasticLocation.IsDirectContract)}").Boost(4),
-                            category => category.Context($"{nameof(ElasticLocation.IsConfirmed)}").Boost(3),
-                            category => category.Context($"{nameof(ElasticLocation.IsInDomesticZone)}").Boost(2)))
+                        .Contexts(queriesDescriptor => queriesDescriptor
+                                .Context(AccommodationContextCategoryNames.LocationType, category 
+                                    => category.Context(GetContextName(MapperLocationTypes.Accommodation)))
+                                .Context(AccommodationContextCategoryNames.LocationType, category 
+                                    => category.Context(GetContextName(MapperLocationTypes.Accommodation))))
+                        
+                           /* category => category.Context(ElasticContextCategoryNames.IsPromotion).Boost(5),
+                            category => category.Context(ElasticContextCategoryNames.IsDirectContract).Boost(4),
+                            category => category.Context(ElasticContextCategoryNames.IsConfirmed).Boost(3),
+                            category => category.Context($"{nameof(ElasticLocation.IsInDomesticZone)}").Boost(2)).Context()*/
                         .Size(MaxLocationCount)
                         .SkipDuplicates();
             }
@@ -125,9 +130,14 @@ namespace HappyTravel.Osaka.Api.Services.PredictionServices
         
         
         private Prediction Build(ElasticLocation location) => new(location.Id, location.PredictionText, string.Empty);
+
+        private Dictionary<string, double> AccommodationBoostValues = new()
+        {
+            {AccommodationContextCategoryNames }
+        };
         
         private const int MaxLocationCount = 10;
-        private readonly IndexOptions _indexOptions;
+        private readonly IndexesOptions _indexesOptions;
         private readonly IElasticClient _elasticClient;
         private readonly ILogger<IPredictionsService> _logger;
     }

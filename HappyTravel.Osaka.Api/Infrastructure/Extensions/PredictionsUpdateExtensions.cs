@@ -1,5 +1,6 @@
 ﻿using HappyTravel.Osaka.Api.Infrastructure.StackExchange.Redis;
 using HappyTravel.Osaka.Api.Services;
+using HappyTravel.Osaka.Api.Services.Workers.RedisStreams;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,7 +51,9 @@ namespace HappyTravel.Osaka.Api.Infrastructure.Extensions
                 o.StreamName = streamName;
             });
             
-            services.AddHostedService<UpdateFromStreamWorker>();
+            services.AddHostedService<CountryStreamWorker>();
+            services.AddHostedService<LocalityStreamWorker>();
+            services.AddHostedService<AccommodationStreamWorker>();
             
             return services;
         }

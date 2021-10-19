@@ -5,13 +5,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.MapperContracts.Public.Locations;
 using HappyTravel.Osaka.Api.Infrastructure;
 using HappyTravel.Osaka.Api.Infrastructure.Logging;
-using HappyTravel.Osaka.Api.Models;
-using HappyTravel.Osaka.Api.Models.Updates;
+using HappyTravel.Osaka.Api.Models.Elastic;
 using HappyTravel.Osaka.Api.Options;
 using HappyTravel.Osaka.Api.Services.PredictionServices;
+using HappyTravel.Osaka.Api.Services.PredictionServices.Management;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,24 +18,24 @@ using Sentry;
 using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Abstractions;
 
-namespace HappyTravel.Osaka.Api.Services
+namespace HappyTravel.Osaka.Api.Services.Workers.RedisStreams
 {
     public class UpdateFromStreamWorker : BackgroundService
     {
-        public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, IPredictionsManagementService predictionsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
+        public UpdateFromStreamWorker(IRedisCacheClient redisCacheClient, ElasticCountryManagementService countryManagementService, ElasticLocalityManagementService localityManagementService, ElasticAccommodationsManagementService accommodationsManagementService, IOptions<PredictionUpdateOptions> updateOptions, IOptions<IndexesOptions> indexOptions, ILogger<UpdateFromStreamWorker> logger)
         {
-            _logger = logger;
+           /* _logger = logger;
             _updateOptions = updateOptions.Value;
             _predictionsManagementService = predictionsManagementService;
             _database = redisCacheClient.GetDbFromConfiguration().Database;
             GetIndexName(indexOptions.Value, out _index);
-            InitRedisStreamIfNeeded();
+            InitRedisStreamIfNeeded();*/
         }
 
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            const int batchSize = 5;
+            /*const int batchSize = 5;
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -77,14 +76,14 @@ namespace HappyTravel.Osaka.Api.Services
             Task<StreamEntry[]> GetEntries() => _database!.StreamReadAsync(_updateOptions.StreamName, "0-0", batchSize);
             
             
-            Task DeleteEntries(StreamEntry[] entries) => _database!.StreamDeleteAsync(_updateOptions.StreamName, entries.Select(e=> e.Id).ToArray());
+            Task DeleteEntries(StreamEntry[] entries) => _database!.StreamDeleteAsync(_updateOptions.StreamName, entries.Select(e=> e.Id).ToArray());*/
         }
-
+/*
         
-        private void GetIndexName(IndexOptions indexOptions, out string index)
+        private void GetIndexName(IndexesOptions indexesOptions, out string index)
         {
             const string enLanguage = "en";
-            if (!ElasticsearchHelper.TryGetIndex(indexOptions.Indexes!, enLanguage, out index))
+            if (!ElasticHelper.TryGetIndex(indexesOptions.Indexes!, enLanguage, out index))
                 throw new ArgumentException($"Failed to get an index name by the language code '{enLanguage}");
         }
         
@@ -154,7 +153,9 @@ namespace HappyTravel.Osaka.Api.Services
         private readonly string _index;
         private readonly ILogger<UpdateFromStreamWorker> _logger;
         private readonly PredictionUpdateOptions _updateOptions;
-        private readonly IPredictionsManagementService _predictionsManagementService;
-        private readonly IDatabase _database;
+        private readonly ElasticCountryManagementService _elasticCountryManagement;
+        private readonly ElasticLocalityManagementService _elasticLocalityManagementService;
+        private readonly ElasticAccommodationsManagementService _elasticAccommodationsManagement;
+        private readonly IDatabase _database;*/
     }
 }

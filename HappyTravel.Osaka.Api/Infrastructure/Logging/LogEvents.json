@@ -1,11 +1,14 @@
 [
-    {"id": 2001, "name": "StartUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2002, "name": "RemoveLocationsFromIndex", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2003, "name": "GetLocationsFromMapper", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2004, "name": "CompleteUploadingLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2005, "name": "UploadingError", "level": "Critical", "source": "LocationsManagementService", "isException": false},
-    {"id": 2006, "name": "PredictionsQuery", "level": "Information", "source": "LocationsService", "isException": false},
-    {"id": 2007, "name": "AddLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2008, "name": "UpdateLocations", "level": "Information", "source": "LocationsManagementService", "isException": false},
-    {"id": 2009, "name": "RemoveLocations", "level": "Information", "source": "LocationsManagementService", "isException": false}
+    {"id": 2010, "name": "ElasticCountryAdded", "level": "Information", "template": "'{numberOfCountries}' countries have been added", "argumentTypes": ["int"]},
+    {"id": 2011, "name": "ElasticLocalityAdded", "level": "Information", "template": "'{numberOfLocalities}' localities have been added", "argumentTypes": ["int"]},
+    {"id": 2012, "name": "ElasticAccommodationAdded", "level": "Information", "template": "'{numberOfAccommodations}' accommodations have been added", "argumentTypes": ["int"]},
+    {"id": 2013, "name": "ElasticCountryUpdated", "level": "Information", "template": "'{numberOfCountries}' countries have been added", "argumentTypes": ["int"]},
+    {"id": 2014, "name": "ElasticLocalityUpdated", "level": "Information", "template": "'{numberOfLocalities}' localities have been added", "argumentTypes": ["int"]},
+    {"id": 2015, "name": "ElasticAccommodationUpdated", "level": "Information", "template": "'{numberOfAccommodations}' accommodations have been added", "argumentTypes": ["int"]},
+    {"id": 2016, "name": "ElasticCountryDeleted", "level": "Information", "template": "'{numberOfCountries}' countries have been added", "argumentTypes": ["int"]},
+    {"id": 2017, "name": "ElasticLocalityDeleted", "level": "Information", "template": "'{numberOfLocalities}' localities have been added", "argumentTypes": ["int"]},
+    {"id": 2018, "name": "ElasticAccommodationDeleted", "level": "Information", "template": "'{numberOfAccommodations}' accommodations have been added", "argumentTypes": ["int"]},
+    {"id": 2019, "name": "ElasticCountryErrors", "level": "Critical", "template": "{errors}", "argumentTypes": ["string"]},
+    {"id": 2020, "name": "ElasticLocalityErrors", "level": "Critical", "template": "{errors}", "argumentTypes": ["string"]},
+    {"id": 2021, "name": "ElasticAccommodationErrors", "level": "Critical", "template": "{errors}", "argumentTypes": ["string"]}
 ]
